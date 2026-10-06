@@ -115,3 +115,29 @@ test('стадия «идея» не получает шагов про масш
   assert.equal(r2.focus, 'q10');
   assert.match(r2.nextStep, /научиться продвигать проект/);
 });
+
+
+test('стадийная интерпретация не считает нормальные для идеи дефициты проблемой', () => {
+  const { answers } = normalizeAnswers(minimal);
+  const r = buildResult({ answers, segment: 'private' });
+  assert.ok(r.stageFit.some((x) => /стадии идеи/i.test(x)));
+  assert.equal(r.confidence.id, 'preliminary');
+  assert.equal(r.contradictions.length, 0);
+});
+
+test('противоречия снижают надёжность результата, но не ломают расчёт', () => {
+  const raw = { ...minimal, q1: 'idea', q9: 'regular', q6: 'alone', q14: 'autonomous' };
+  const { answers } = normalizeAnswers(raw);
+  const r = buildResult({ answers, segment: 'private' });
+  assert.ok(r.contradictions.length >= 2);
+  assert.equal(r.confidence.id, 'preliminary');
+  assert.equal(typeof r.total, 'number');
+});
+
+test('запрос участника может отличаться от диагностического фокуса', () => {
+  const raw = { ...minimal, q15: 'scaling' };
+  const { answers } = normalizeAnswers(raw);
+  const r = buildResult({ answers, segment: 'private' });
+  assert.ok(r.subjectiveMismatch);
+  assert.equal(r.need.id, 'scaling');
+});
