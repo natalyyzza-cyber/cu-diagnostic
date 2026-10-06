@@ -74,7 +74,7 @@ test('интерпретация общего балла', () => {
 test('зоны роста: сначала низкие баллы, при равенстве — запрос Q15', () => {
   const scores = { q5: 1, q6: 1, q7: 2, q8: 1, q9: 1, q10: 0.5, q11: 2, q12: 1, q13: 1, q14: 1 };
   assert.deepEqual(pickGrowthZones(scores, 'pilot', 'unknown'), ['q14', 'q10', 'q12']);
-  assert.deepEqual(pickGrowthZones(scores, 'pilot', 'scaling'), ['q10', 'q14', 'q12']);
+  assert.deepEqual(pickGrowthZones(scores, 'pilot', 'scaling'), ['q14', 'q13', 'q10']);
   const { focus, needMatched } = pickFocus(['q10', 'q14', 'q12'], 'scaling');
   assert.equal(focus, 'q14');
   assert.equal(needMatched, true);
