@@ -371,6 +371,21 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
               : 'По всем показателям диагностики у проекта максимальный балл. Фокус — на развитии и масштабе.'),
     );
 
+  const interpretation = h('section', { class: 'card block' },
+    h('h2', { class: 'block__title' }, 'Как читать этот результат'),
+    h('p', {}, 'Итоговый балл — ориентир, а не оценка качества проекта. Интерпретация учитывает стадию проекта и то, насколько ответы подтверждают друг друга.'),
+    h('p', { class: 'muted' }, 'Надёжность результата: ' + (r.confidence?.label || 'предварительная') + '.'));
+
+  const flags = [];
+  if (r.stageFit?.length) flags.push(...r.stageFit);
+  if (r.contradictions?.length) flags.push(...r.contradictions.map(x => 'Есть расхождение в ответах: ' + x));
+  if (r.subjectiveMismatch) flags.push(r.subjectiveMismatch.text);
+  const diagnosticNote = flags.length
+    ? h('section', { class: 'card block block--accent' },
+        h('h2', { class: 'block__title' }, 'Что важно учесть'),
+        h('ul', { class: 'items' }, flags.slice(0, 4).map(x => h('li', { class: 'item' }, h('p', {}, x)))))
+    : null;
+
   const potential = h('section', { class: 'card block' },
     h('h2', { class: 'block__title' }, 'Потенциал развития'),
     h('p', { 'data-text': 'potential' }, r.potential));
@@ -434,6 +449,8 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
   render(
     h('div', { class: 'result' },
       scoreCard,
+      interpretation,
+      diagnosticNote,
       banner,
       h('div', { class: 'grid-2' },
         listSection('Что сейчас уже хорошо получается', r.strengths, 'strength'),
