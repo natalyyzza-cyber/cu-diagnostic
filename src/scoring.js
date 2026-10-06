@@ -195,7 +195,7 @@ function buildPotential({strengths,growthZones,stage,stageFit,confidence}) {
 
 function buildNextStep({focus,needMatched,need,stage}) {
   let text=NEXT_STEPS[focus??'none'][stageGroup(stage)];
-  if (focus&&!needMatched&&need&&need!=='unknown') text += ' Ваш запрос тоже важен, но сначала полезно закрыть это более базовое ограничение.';
+  if (focus&&!needMatched&&need&&need!=='unknown') text += ' Ваш запрос «' + optionLabel('q15', need).toLowerCase() + '» тоже важен, но сначала полезно закрыть это более базовое ограничение.';
   return text;
 }
 
