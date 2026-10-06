@@ -190,12 +190,13 @@ function buildPotential({strengths,growthZones,stage,stageFit,confidence}) {
   if (growthText.length) parts.push('Сейчас сильнее всего ограничивают следующий шаг: '+growthText.join(' и ')+'.');
   if (stageFit?.length) parts.push(stageFit[0]);
   if (confidence==='preliminary') parts.push('Часть выводов пока основана на самооценке, поэтому результат стоит воспринимать как рабочую гипотезу и уточнять практикой.');
+  parts.push('Диагностика не сравнивает вас с абстрактным «идеальным проектом»: она помогает выбрать наиболее полезный следующий шаг именно для текущей стадии проекта.');
   return parts.join(' ');
 }
 
 function buildNextStep({focus,needMatched,need,stage}) {
   let text=NEXT_STEPS[focus??'none'][stageGroup(stage)];
-  if (focus&&!needMatched&&need&&need!=='unknown') text += ' Ваш запрос «' + optionLabel('q15', need).toLowerCase() + '» тоже важен, но сначала полезно закрыть это более базовое ограничение.';
+  if (focus&&!needMatched&&need&&need!=='unknown'&&stage!=='idea') text += ' Ваш запрос «' + optionLabel('q15', need).toLowerCase() + '» тоже важен, но сначала полезно закрыть это более базовое ограничение.';
   return text;
 }
 
