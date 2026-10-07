@@ -4,6 +4,7 @@ import { QUESTIONS, MAX_SCORE } from '../public/js/questions.js';
 import {
   normalizeAnswers, computeScores, buildResult, scoreQ7, scoreQ8, scoreQ13,
   pickGrowthZones, pickFocus, resultStage, INDICATORS, SCORED_IDS, modelCoverage, selectBottleneck,
+  isUsableProblemText,
 } from '../src/scoring.js';
 
 const allYes = { audience: 'yes', value: 'yes', participants: 'yes', partners: 'yes', resources: 'yes', funding: 'yes', costs: 'yes', revenue: 'yes' };
@@ -171,6 +172,32 @@ test('Q15: любой пользовательский запрос безопа
   }
 });
 
+
+test('свободный текст проблемы не попадает в диагноз, если он похож на мусор', () => {
+  assert.equal(isUsableProblemText('пфдшфолрсодяч'), false);
+  assert.equal(isUsableProblemText('Помогаем жителям находить локальные события и сообщества в районе.'), true);
+  const raw = { ...minimal, q4: 'пфдшфолрсодяч' };
+  const { answers } = normalizeAnswers(raw);
+  const r = buildResult({ answers, segment: 'private' });
+  const serialized = JSON.stringify(r.diagnosis);
+  assert.doesNotMatch(serialized, /пфдшфолрсодяч/i);
+});
+
+test('новый диагноз содержит отдельный результат шага вместо общего потенциала', () => {
+  const { answers } = normalizeAnswers({ ...minimal, q1: 'pilot', q9: 'tested', q10: 'feedback', q12: 'none' });
+  const r = buildResult({ answers, segment: 'private' });
+  assert.ok(r.diagnosis.outcome.length > 40);
+  assert.ok(r.diagnosis.nextTest.length > 40);
+  assert.ok(r.diagnosis.decisionAfterTest.length > 40);
+  assert.ok(!/после пилота особенно важен разбор опыта/i.test(r.diagnosis.stageContext || ''));
+});
+
+test('пользовательский результат больше не содержит зоны развития и годовой роадмап', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const source = await readFile(new URL('../public/js/app.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /Что сейчас стоит развивать/);
+  assert.doesNotMatch(source, /План развития на год/);
+});
 
 test('результат содержит диагностическое заключение, а не только уровень проекта', () => {
   const { answers, errors } = normalizeAnswers(minimal);
