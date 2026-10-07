@@ -334,7 +334,6 @@ async function submitAnswers(btn) {
 function renderResult({ id, name, result }, { personalize = false } = {}) {
   const r = result;
   const loading = personalize && config.aiEnabled && !r.personalized;
-  const pct = Math.round((r.total / r.max) * 100);
   const firstName = (name || '').split(/\s+/)[0];
 
   const scoreCard = h('section', { class: 'card result-head' },
@@ -447,7 +446,6 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
       potential,
       nextStep,
       roadmap,
-      profile,
       cta,
       tools,
     ),
