@@ -111,7 +111,7 @@ export const INDICATORS = {
 };
 
 const STAGE_PRIORITY = {
- idea:['q5','q12','q8','q9','q10','q6','q13','q11','q7','q14'],
+ idea:['q12','q5','q8','q9','q10','q6','q13','q11','q7','q14'],
  first_steps:['q9','q12','q10','q5','q6','q8','q13','q11','q7','q14'],
  pilot:['q10','q12','q11','q13','q6','q14','q7','q8','q5','q9'],
  working:['q14','q11','q12','q13','q6','q10','q7','q8','q5','q9'],
@@ -188,8 +188,9 @@ export function selectBottleneck(scores,answers,stage) {
   const candidates=ids.filter(id=>scores[id]<getQuestion(id).max);
   if (!candidates.length) return null;
   candidates.sort((a,b)=>{
-    const ga=normalizedGap(a,scores)*(STAGE_WEIGHT[stage]?.[a]??1)+bottleneckEvidencePenalty(a,answers);
-    const gb=normalizedGap(b,scores)*(STAGE_WEIGHT[stage]?.[b]??1)+bottleneckEvidencePenalty(b,answers);
+    const selfAssessmentFactor = id => ['q5','q8','q11','q14'].includes(id) ? 0.7 : 1;
+    const ga=normalizedGap(a,scores)*(STAGE_WEIGHT[stage]?.[a]??1)*selfAssessmentFactor(a)+bottleneckEvidencePenalty(a,answers);
+    const gb=normalizedGap(b,scores)*(STAGE_WEIGHT[stage]?.[b]??1)*selfAssessmentFactor(b)+bottleneckEvidencePenalty(b,answers);
     // Если ограничения практически равны, приоритет стадии должен быть
     // сильнее небольшой разницы в самооценке/доказательствах. Это не даёт
     // пограничным профилям «скакать» между соседними индикаторами.
