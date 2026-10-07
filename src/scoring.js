@@ -188,7 +188,7 @@ export function selectBottleneck(scores,answers,stage) {
   const candidates=ids.filter(id=>scores[id]<getQuestion(id).max);
   if (!candidates.length) return null;
   candidates.sort((a,b)=>{
-    const selfAssessmentFactor = id => ['q5','q8','q11','q14'].includes(id) ? 0.7 : 1;
+    const selfAssessmentFactor = id => ['q5','q6','q8','q11','q14'].includes(id) ? 0.7 : 1;
     const ga=normalizedGap(a,scores)*(STAGE_WEIGHT[stage]?.[a]??1)*selfAssessmentFactor(a)+bottleneckEvidencePenalty(a,answers);
     const gb=normalizedGap(b,scores)*(STAGE_WEIGHT[stage]?.[b]??1)*selfAssessmentFactor(b)+bottleneckEvidencePenalty(b,answers);
     // Если ограничения практически равны, приоритет стадии должен быть
