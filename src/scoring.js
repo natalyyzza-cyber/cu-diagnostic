@@ -341,8 +341,11 @@ function confidenceLevel(a,contradictions) {
     Number(['research','data','demand'].includes(a.q12))+
     Number(a.q5==='b')+
     Number(['model','sources'].includes(a.q11));
-  if(evidence>=4 && !contradictions.length) return 'high';
-  if(evidence>=2 && contradictions.length<=1) return 'medium';
+  const realityEvidence=Number(['tested','regular'].includes(a.q9))+
+    Number(['analyzed','changed'].includes(a.q10))+
+    Number(['research','data','demand'].includes(a.q12));
+  if(evidence>=4 && realityEvidence>=2 && !contradictions.length) return 'high';
+  if(evidence>=2 && realityEvidence>=1 && contradictions.length<=1) return 'medium';
   return 'preliminary';
 }
 
