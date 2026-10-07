@@ -170,3 +170,24 @@ test('Q15: любой пользовательский запрос безопа
     assert.ok(r.roadmap.length >= 5, `roadmap q15=${need}`);
   }
 });
+
+
+test('результат содержит диагностическое заключение, а не только уровень проекта', () => {
+  const { answers, errors } = normalizeAnswers(minimal);
+  assert.deepEqual(errors, []);
+  const r = buildResult({ answers, segment: 'private' });
+  assert.ok(r.diagnosis);
+  assert.ok(r.diagnosis.headline.length > 10);
+  assert.ok(r.diagnosis.summary.length > 40);
+  assert.ok(r.diagnosis.openQuestion.length > 20);
+  assert.ok(r.diagnosis.whyNow.length > 30);
+  assert.ok(r.diagnosis.nextTest.length > 30);
+  assert.ok(r.diagnosis.decisionAfterTest.length > 30);
+});
+
+test('диагностическое заключение меняется вместе с главным ограничением', () => {
+  const base = { ...minimal, q1: 'first_steps', q9: 'started', q12: 'none' };
+  const demand = buildResult({ answers: normalizeAnswers({ ...base, q12: 'none', q15: 'audience_needs' }).answers, segment: 'private' });
+  const practice = buildResult({ answers: normalizeAnswers({ ...base, q9: 'thinking', q12: 'research', q15: 'pilot' }).answers, segment: 'private' });
+  assert.notEqual(demand.diagnosis.headline, practice.diagnosis.headline);
+});
