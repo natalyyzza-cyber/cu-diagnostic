@@ -1,0 +1,26 @@
+name: LLM smoke test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  llm-smoke:
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+      OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+      DIAGNOSIS_LLM: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - name: Run real provider test
+        if: ${{ env.OPENAI_API_KEY != '' }}
+        run: npm test -- test/diagnosis-formats.test.js
+      - name: Explain skipped smoke test
+        if: ${{ env.OPENAI_API_KEY == '' }}
+        run: echo "LLM smoke test skipped: repository secret OPENAI_API_KEY is not configured."
