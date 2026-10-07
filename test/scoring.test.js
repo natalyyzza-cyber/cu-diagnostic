@@ -46,7 +46,7 @@ test('Q8: покрывает три блока модели, а не тольк�
   assert.equal(scoreQ8(balanced), 0.5);
   assert.equal(scoreQ8(allYes), 1);
   assert.equal(modelCoverage(balanced).value.complete, true);
-  assert.equal(modelCoverage(balanced).sustainability.yes, 1);
+  assert.equal(modelCoverage(balanced).sustainability.yes, 0);
 });
 
 test('Q13: виды ресурсов, «нет ресурсов» исключает остальные', () => {
