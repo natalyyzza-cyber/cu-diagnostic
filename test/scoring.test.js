@@ -41,7 +41,7 @@ test('Q7: роль автора', () => {
 
 test('Q8: покрывает три блока модели, а не только количество «Да»', () => {
   const valueOnly = { audience: 'yes', value: 'yes', participants: 'no', partners: 'no', resources: 'no', funding: 'no', costs: 'no', revenue: 'no' };
-  const balanced = { audience: 'yes', value: 'yes', participants: 'yes', partners: 'yes', resources: 'yes', funding: 'yes', costs: 'no', revenue: 'no' };
+  const balanced = { audience: 'yes', value: 'yes', participants: 'yes', partners: 'yes', resources: 'yes', funding: 'no', costs: 'no', revenue: 'no' };
   assert.equal(scoreQ8(valueOnly), 0);
   assert.equal(scoreQ8(balanced), 0.5);
   assert.equal(scoreQ8(allYes), 1);
