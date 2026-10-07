@@ -2,7 +2,7 @@
 import { createApp } from '../../src/app.js';
 
 const app = createApp({
-  // Персонализация через Claude может идти дольше лимита обычной функции (60 с),
+  // Персонализация через AI-провайдера может идти дольше лимита обычной функции (60 с),
   // поэтому запускаем фоновую функцию (до 15 минут) и сразу отвечаем клиенту.
   triggerPersonalize: async (id, origin) => {
     const res = await fetch(`${origin}/.netlify/functions/personalize-background`, {
