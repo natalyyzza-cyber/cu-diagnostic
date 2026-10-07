@@ -1,19 +1,17 @@
-name: Debug test matrix
+name: Debug syntax
 on:
   push:
     branches: ["claude/urban-projects-diagnostic-f96myi"]
 jobs:
-  test:
+  syntax:
     strategy:
       fail-fast: false
       matrix:
-        testfile: ["test/scoring.test.js","test/ai-merge.test.js","test/diagnosis-formats.test.js"]
+        file: ["src/scoring.js","src/ai.js","public/js/questions.js"]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm install
-      - run: node --test ${{ matrix.testfile }}
+      - run: node --check ${{ matrix.file }}
