@@ -228,7 +228,7 @@ export function resourceGaps(answers,stage,formatId) {
 }
 
 export function modelGaps(answers) {
-  return Object.values(modelCoverage(answers.q8)).filter(x=>x.yes===0).map(x=>x.id);
+  return Object.values(modelCoverage(answers.q8)).filter(Boolean).filter(x=>x.yes===0).map(x=>x.id);
 }
 
 export function pickResourceFocus(answers,stage,formatId) {
