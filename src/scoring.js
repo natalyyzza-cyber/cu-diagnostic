@@ -190,7 +190,10 @@ export function selectBottleneck(scores,answers,stage) {
   candidates.sort((a,b)=>{
     const ga=normalizedGap(a,scores)*(STAGE_WEIGHT[stage]?.[a]??1)+bottleneckEvidencePenalty(a,answers);
     const gb=normalizedGap(b,scores)*(STAGE_WEIGHT[stage]?.[b]??1)+bottleneckEvidencePenalty(b,answers);
-    if (gb!==ga) return gb-ga;
+    // Если ограничения практически равны, приоритет стадии должен быть
+    // сильнее небольшой разницы в самооценке/доказательствах. Это не даёт
+    // пограничным профилям «скакать» между соседними индикаторами.
+    if (Math.abs(gb-ga) > 0.5) return gb-ga;
     return (STAGE_PRIORITY[stage]?.indexOf(a)??99)-(STAGE_PRIORITY[stage]?.indexOf(b)??99);
   });
   return candidates[0];
