@@ -392,7 +392,7 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
   const outcome = h('section', { class: 'card block' },
     h('h2', { class: 'block__title' }, 'Что изменится после этого шага'),
     h('p', { 'data-text': 'outcome' },
-      'У вас появится не просто ещё один опыт, а конкретный факт, на который можно опереться в следующем решении проекта.'),
+      d.outcome || 'У вас появится новый факт, на который можно опереться в следующем решении проекта.'),
   );
 
   const track = (type) => () => {
@@ -458,6 +458,7 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
         app.querySelector('.diagnosis-note')?.replaceChildren(pd.stageContext || d.stageContext || '');
         app.querySelector('[data-text="next"]')?.replaceChildren(pd.nextTest || pr.nextStep);
         app.querySelector('[data-text="decision"]')?.replaceChildren(pd.decisionAfterTest || d.decisionAfterTest);
+        app.querySelector('[data-text="outcome"]')?.replaceChildren(pd.outcome || d.outcome || 'У вас появится новый факт, на который можно опереться в следующем решении проекта.');
       })
       .catch(() => {})
       .finally(() => {
