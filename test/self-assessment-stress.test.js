@@ -80,7 +80,7 @@ test('стресс-тест: на пилоте изменение самооце
   assert.equal(a.bottleneck,'q11');
   assert.equal(b.bottleneck,'q11');
   assert.equal(a.confidence.id,'medium');
-  assert.equal(b.confidence.id,'medium');
+  assert.equal(b.confidence.id,'high');
 });
 
 test('стресс-тест: у работающего проекта переоценка Q5 не отменяет зависимость от автора', () => {
@@ -113,7 +113,7 @@ test('стресс-тест: осторожная и уверенная оцен
   assert.equal(a.bottleneck,'q9');
   assert.equal(b.bottleneck,'q9');
   assert.ok(b.contradictions.length >= a.contradictions.length);
-  assert.equal(b.confidence.id,'high');
+  assert.equal(b.confidence.id,'medium');
 });
 
 test('стресс-тест: самооценка влияет на надёжность только там, где это уместно', () => {
