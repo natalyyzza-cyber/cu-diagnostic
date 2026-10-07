@@ -278,7 +278,7 @@ const ROADMAP_POOL = {
 export function isUsableProblemText(text) {
   const value = String(text ?? '').trim();
   if (value.length < 20) return false;
-  const words = value.split(/\\s+/).filter(Boolean);
+  const words = value.split(/\s+/).filter(Boolean);
   if (words.length < 4) return false;
   if (!/[а-яёa-z]/i.test(value)) return false;
   const letters = (value.match(/[а-яёa-z]/gi) || []).length;
