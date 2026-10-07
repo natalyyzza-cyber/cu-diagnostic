@@ -140,7 +140,7 @@ function describeAnswers(record) {
 Фокус ближайшего шага: ${r.focus ? `${r.focus} — ${INDICATORS[r.focus].growthTitle}` : 'развитие и следующий уровень проекта'}
 Запрошенная человеком тема: ${r.requestedFocus ? `${r.requestedFocus} — ${INDICATORS[r.requestedFocus].growthTitle}` : 'не совпала с выбранным фокусом или не определена'}
 Недостающие блоки модели проекта: ${r.modelGaps?.join(', ') || 'нет'}
-Предполагаемый критический ресурс ближайшего шага: ${r.resourceGap || 'не определён'},
+Предполагаемый критический ресурс ближайшего шага: ${r.resourceGap || 'не определён'}`,
     `Запрос участника совпадает с фокусом: ${r.needMatched ? 'да' : 'нет'}`,
   ];
   return lines.join('\n');
