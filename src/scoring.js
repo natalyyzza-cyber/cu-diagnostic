@@ -427,7 +427,7 @@ function buildDiagnosis({answers,stage,format,audience,bottleneck,confidence,sta
     decisionAfterTest:template.decision,
     outcome:DIAGNOSIS_OUTCOMES[id] || DIAGNOSIS_OUTCOMES.none,
     confidenceNote,
-    stageContext:stageFit?.[0] || null,
+    stageContext:(stage==='idea' && stageFit?.[0]) ? stageFit[0] : null,
   };
 }
 
@@ -512,7 +512,11 @@ function subjectiveMismatch(need,focus) {
   if(!need||need==='unknown'||!focus) return null;
   const ids=NEED_TO_INDICATORS[need]??[];
   if(ids.includes(focus)) return null;
-  return {need:optionLabel('q15',need),focus:INDICATORS[focus].growthTitle,text:'По ответам диагностики ваш запрос важен, но сейчас проект сильнее ограничивает другая задача. Сначала полезно закрыть её — это упростит следующий шаг.'};
+  return {
+    need:optionLabel('q15',need),
+    focus:INDICATORS[focus].growthTitle,
+    text:`Вы указали запрос «${optionLabel('q15',need)}». По ответам сначала стоит решить задачу «${INDICATORS[focus].growthTitle.toLowerCase()}» — после этого к вашему запросу будет проще вернуться с большей опорой.`,
+  };
 }
 
 export function buildResult({answers,segment}) {
