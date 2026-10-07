@@ -1,0 +1,28 @@
+name: Debug test output
+on:
+  push:
+    branches: ["claude/urban-projects-diagnostic-f96myi"]
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - name: Run tests and report
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set +e
+          npm test > /tmp/test.log 2>&1
+          code=$?
+          tail -c 12000 /tmp/test.log > /tmp/test-tail.txt
+          gh api --method POST "/repos/$REPO/commits/$SHA/comments" -f body="$(cat /tmp/test-tail.txt)"
+          exit $code
