@@ -1,14 +1,13 @@
-name: Debug test names
+name: Debug test output
 on:
   push:
     branches: ["claude/urban-projects-diagnostic-f96myi"]
 jobs:
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        name: ["максимальная сумма баллов","минимальные и максимальные ответы","Q7: роль автора","Q8: покрывает три блока","Q13: виды ресурсов","валидация","интерпретация общего балла","главное ограничение","Q15 не переопределяет","у каждого возможного балла","полный результат","стадия «идея»","стадийная интерпретация","противоречия снижают","запрос участника"]
+  debug:
+    if: ${{ !contains(github.event.head_commit.message, 'debug: capture test output') }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -16,4 +15,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install
-      - run: node --test test/scoring.test.js --test-name-pattern="${{ matrix.name }}"
+      - name: Capture test output
+        run: |
+          set +e
+          npm test > debug-output.txt 2>&1
+          echo $? > debug-exit.txt
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add debug-output.txt debug-exit.txt
+          git commit -m "debug: capture test output"
+          git push
