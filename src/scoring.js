@@ -57,8 +57,8 @@ export function modelCoverage(matrix = {}) {
     sustainability: ['funding','costs','revenue'],
   };
   return Object.fromEntries(Object.entries(groups).map(([id, rows]) => {
-    const yes = rows.filter(row => matrix[row] === 'yes');
-    return { id, yes: yes.length, total: rows.length, complete: yes.length === rows.length, missing: rows.filter(row => matrix[row] !== 'yes') };
+    const yes = rows.filter(row => matrix?.[row] === 'yes');
+    return [id, { id, yes: yes.length, total: rows.length, complete: yes.length === rows.length, missing: rows.filter(row => matrix?.[row] !== 'yes') }];
   }));
 }
 
