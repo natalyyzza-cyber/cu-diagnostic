@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { QUESTIONS, MAX_SCORE } from '../public/js/questions.js';
 import {
   normalizeAnswers, computeScores, buildResult, scoreQ7, scoreQ8, scoreQ13,
-  pickGrowthZones, pickFocus, resultStage, INDICATORS, SCORED_IDS,
+  pickGrowthZones, pickFocus, resultStage, INDICATORS, SCORED_IDS, modelCoverage, selectBottleneck,
 } from '../src/scoring.js';
 
 const allYes = { audience: 'yes', value: 'yes', participants: 'yes', partners: 'yes', resources: 'yes', funding: 'yes', costs: 'yes', revenue: 'yes' };
@@ -39,9 +39,14 @@ test('Q7: роль автора', () => {
   assert.equal(scoreQ7(['concept', 'partners', 'city', 'all_myself']), 1);
 });
 
-test('Q8: количество «Да»', () => {
-  const m = (n) => Object.fromEntries(Object.keys(allYes).map((k, i) => [k, i < n ? 'yes' : 'no']));
-  assert.deepEqual([0, 2, 3, 5, 6, 8].map((n) => scoreQ8(m(n))), [0, 0, 0.5, 0.5, 1, 1]);
+test('Q8: покрывает три блока модели, а не только количество «Да»', () => {
+  const valueOnly = { audience: 'yes', value: 'yes', participants: 'no', partners: 'no', resources: 'no', funding: 'no', costs: 'no', revenue: 'no' };
+  const balanced = { audience: 'yes', value: 'yes', participants: 'yes', partners: 'yes', resources: 'yes', funding: 'yes', costs: 'no', revenue: 'no' };
+  assert.equal(scoreQ8(valueOnly), 0);
+  assert.equal(scoreQ8(balanced), 0.5);
+  assert.equal(scoreQ8(allYes), 1);
+  assert.equal(modelCoverage(balanced).value.complete, true);
+  assert.equal(modelCoverage(balanced).sustainability.yes, 1);
 });
 
 test('Q13: виды ресурсов, «нет ресурсов» исключает остальные', () => {
@@ -71,13 +76,22 @@ test('интерпретация общего балла', () => {
   assert.equal(resultStage(17).id, 'sustainable');
 });
 
-test('зоны роста: сначала низкие баллы, при равенстве — запрос Q15', () => {
-  const scores = { q5: 1, q6: 1, q7: 2, q8: 1, q9: 1, q10: 0.5, q11: 2, q12: 1, q13: 1, q14: 1 };
-  assert.deepEqual(pickGrowthZones(scores, 'pilot', 'unknown'), ['q14', 'q10', 'q12']);
-  assert.deepEqual(pickGrowthZones(scores, 'pilot', 'scaling'), ['q14', 'q13', 'q10']);
-  const { focus, needMatched } = pickFocus(['q10', 'q14', 'q12'], 'scaling');
-  assert.equal(focus, 'q14');
-  assert.equal(needMatched, true);
+test('главное ограничение учитывает стадию и фактические доказательства', () => {
+  const answers = { ...minimal, q1: 'pilot', q9: 'tested', q10: 'feedback', q12: 'none', q11: 'model', q13: ['venue'], q15: 'scaling' };
+  const scores = computeScores(answers).scores;
+  const bottleneck = selectBottleneck(scores, answers, 'pilot');
+  assert.equal(bottleneck, 'q12');
+  const growth = pickGrowthZones(scores, 'pilot', 'scaling');
+  const { focus, bottleneck: selected } = pickFocus(growth, 'scaling', answers, scores, 'pilot');
+  assert.equal(selected, 'q12');
+  assert.equal(focus, 'q12');
+});
+
+test('Q15 не переопределяет методический фокус', () => {
+  const answers = { ...minimal, q1: 'pilot', q9: 'tested', q10: 'feedback', q12: 'none', q15: 'scaling' };
+  const r = buildResult({ answers, segment: 'private' });
+  assert.equal(r.focus, 'q12');
+  assert.equal(r.needMatched, false);
 });
 
 test('у каждого возможного балла зоны роста есть текст', () => {
@@ -97,6 +111,8 @@ test('полный результат: структура и ограничен�
     const r = buildResult({ answers, segment: 'nko' });
     assert.ok(r.total <= 17);
     assert.ok(r.strengths.length <= 3 && r.growthZones.length <= 3);
+    assert.ok(r.bottleneck === null || SCORED_IDS.includes(r.bottleneck));
+    assert.ok(r.modelCoverage && r.resourceGap !== undefined);
     assert.ok(r.strengths.every((s) => s.score === s.max));
     assert.ok(r.growthZones.every((g) => g.score < g.max && g.text));
     assert.ok(r.roadmap.length >= 5 && r.roadmap.length <= 8, `roadmap ${r.roadmap.length}`);
