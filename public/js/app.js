@@ -334,7 +334,7 @@ async function submitAnswers(btn) {
 function renderResult({ id, name, result }, { personalize = false } = {}) {
   const r = result;
   const loading = personalize && config.aiEnabled && !r.personalized;
-  const firstName = (name || '').split(/\s+/)[0];
+  const firstName = (name || '').split(/\\s+/)[0];
   const d = r.diagnosis || {};
 
   const diagnosis = h('section', { class: 'card result-head result-diagnosis' },
@@ -348,73 +348,52 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
     ),
   );
 
+  const confirmed = Array.isArray(d.confirmed) ? d.confirmed.slice(0, 3) : [];
   const diagnosisChain = h('section', { class: 'card block diagnosis-chain' },
-    h('h2', { class: 'block__title' }, 'Что это значит для проекта'),
-    d.confirmed?.length
+    h('h2', { class: 'block__title' }, 'Что уже известно о проекте'),
+    confirmed.length
       ? h('div', { class: 'diagnosis-part' },
           h('h3', {}, 'На что уже можно опираться'),
-          h('ul', { class: 'items' }, d.confirmed.slice(0,3).map(x => h('li', { class: 'item' }, h('p', {}, x)))))
+          h('ul', { class: 'items diagnosis-confirmed' },
+            confirmed.map(x => h('li', { class: 'item' }, h('p', {}, x)))))
       : null,
     h('div', { class: 'diagnosis-part' },
-      h('h3', {}, 'Что сейчас стоит проверить'),
+      h('h3', {}, 'Что пока неясно'),
       h('p', {}, d.openQuestion || 'Какой следующий факт нужен, чтобы принять решение о проекте?')),
     h('div', { class: 'diagnosis-part' },
-      h('h3', {}, 'Почему это важно сейчас'),
+      h('h3', {}, 'Почему это важно именно сейчас'),
       h('p', {}, d.whyNow || 'Этот вопрос связан с ближайшим практическим шагом проекта.')),
     d.stageContext ? h('p', { class: 'muted diagnosis-note' }, d.stageContext) : null,
   );
 
-  const loader = (label) => h('div', { class: 'ai-loading' }, h('span', { class: 'spinner' }), label);
-
-  const listSection = (title, items, kind) =>
-    h('section', { class: `card block block--${kind}` },
-      h('h2', { class: 'block__title' }, title),
-      items.length
-        ? h('ol', { class: 'items' },
-            items.map((it) => h('li', { class: 'item' },
-              h('div', { class: 'item__head' }, h('h3', {}, it.title)),
-              h('p', { 'data-text': `${kind}-${it.id}` }, it.text))))
-        : h('p', { class: 'muted' },
-            kind === 'strength'
-              ? 'Пока нет отдельных показателей, на которые можно уверенно опереться. Это нормально для ранней стадии: следующая практика даст такие опоры.'
-              : 'Сейчас нет отдельной зоны для развития, которую методика выделяет как приоритетную. Фокус — на проверке главного вопроса проекта.'),
-    );
-
   const diagnosticNote = (() => {
     const flags = [];
-    if (r.contradictions?.length) flags.push(...r.contradictions.map(x => 'Есть расхождение в ответах: ' + x));
-    if (r.subjectiveMismatch) flags.push(r.subjectiveMismatch.text);
+    if (r.contradictions?.length) flags.push(...r.contradictions.map(x => 'В ответах есть расхождение: ' + x));
+    if (r.subjectiveMismatch) {
+      flags.push(`Вы указали запрос «${r.subjectiveMismatch.need}». По ответам сначала стоит решить задачу «${r.subjectiveMismatch.focus.toLowerCase()}» — после этого к вашему запросу будет проще вернуться с большей опорой.`);
+    }
     if (r.confidence?.id !== 'high' && d.confidenceNote) flags.push(d.confidenceNote);
     return flags.length
-      ? h('section', { class: 'card block block--accent' },
+      ? h('section', { class: 'card block block--note' },
           h('h2', { class: 'block__title' }, 'Что важно учесть'),
-          h('ul', { class: 'items' }, flags.slice(0, 3).map(x => h('li', { class: 'item' }, h('p', {}, x)))))
+          h('ul', { class: 'items' }, flags.slice(0, 2).map(x => h('li', { class: 'item' }, h('p', {}, x)))))
       : null;
   })();
 
   const test = h('section', { class: 'card block block--accent result-test' },
     h('p', { class: 'eyebrow' }, 'Следующий эксперимент'),
-    h('h2', { class: 'block__title' }, 'Сделайте это следующим'),
+    h('h2', { class: 'block__title' }, 'Проверьте это на практике'),
     h('p', { class: 'next-step', 'data-text': 'next' }, d.nextTest || r.nextStep),
     h('div', { class: 'decision' },
-      h('h3', {}, 'Что делать по результату'),
-      h('p', { 'data-text': 'decision' }, d.decisionAfterTest || 'Используйте результат действия, чтобы решить, что закрепить, изменить или передать дальше.')),
+      h('h3', {}, 'Как принять решение по результату'),
+      h('p', { 'data-text': 'decision' }, d.decisionAfterTest || 'Используйте результат действия, чтобы решить, что закрепить, изменить или проверить дальше.')),
   );
 
-  const potential = h('section', { class: 'card block' },
+  const outcome = h('section', { class: 'card block' },
     h('h2', { class: 'block__title' }, 'Что изменится после этого шага'),
-    h('p', { 'data-text': 'potential' }, r.potential));
-
-  const roadmapList = h('ol', { class: 'roadmap' });
-  const fillRoadmap = (steps) => roadmapList.replaceChildren(
-    ...steps.map((s, idx) => h('li', { class: 'roadmap__step' },
-      h('span', { class: 'roadmap__num' }, String(idx + 1)),
-      h('div', {}, h('h3', {}, s.title), s.text ? h('p', {}, s.text) : null))));
-  fillRoadmap(r.roadmap);
-  const roadmap = h('section', { class: 'card block' },
-    h('h2', { class: 'block__title' }, 'План развития на год'),
-    h('p', { class: 'muted' }, 'Последовательность действий: сначала проверить главное ограничение, затем принимать следующие решения по результатам.'),
-    roadmapList);
+    h('p', { 'data-text': 'outcome' },
+      'У вас появится не просто ещё один опыт, а конкретный факт, на который можно опереться в следующем решении проекта.'),
+  );
 
   const track = (type) => () => {
     try {
@@ -447,27 +426,25 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
     h('button', { class: 'btn btn--ghost', onclick: () => { resetState(); history.pushState({}, '', '/'); renderIntro(); } }, 'Пройти заново'),
   );
 
-  const banner = loading ? loader('Готовим персональное диагностическое заключение и план действий…') : null;
+  const loader = loading
+    ? h('div', { class: 'ai-loading' }, h('span', { class: 'spinner' }), 'Уточняем диагностическое заключение под ваш проект…')
+    : null;
 
   render(
     h('div', { class: 'result' },
       diagnosis,
       diagnosisChain,
       diagnosticNote,
-      banner,
-      h('div', { class: 'grid-2' },
-        listSection('На что уже можно опираться', r.strengths, 'strength'),
-        listSection('Что сейчас стоит развивать', r.growthZones, 'growth')),
+      loader,
       test,
-      potential,
-      roadmap,
+      outcome,
       cta,
       tools,
     ),
   );
 
   if (loading) {
-    [diagnosisChain, test, potential, roadmap].forEach((el) => el.classList.add('is-loading'));
+    [diagnosis, diagnosisChain, test, outcome].forEach((el) => el.classList.add('is-loading'));
     waitForPersonalization(id)
       .then((pr) => {
         if (!pr?.personalized) return;
@@ -481,14 +458,11 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
         app.querySelector('.diagnosis-note')?.replaceChildren(pd.stageContext || d.stageContext || '');
         app.querySelector('[data-text="next"]')?.replaceChildren(pd.nextTest || pr.nextStep);
         app.querySelector('[data-text="decision"]')?.replaceChildren(pd.decisionAfterTest || d.decisionAfterTest);
-        for (const it of pr.strengths) app.querySelector(`[data-text="strength-${it.id}"]`)?.replaceChildren(it.text);
-        for (const it of pr.growthZones) app.querySelector(`[data-text="growth-${it.id}"]`)?.replaceChildren(it.text);
-        app.querySelector('[data-text="potential"]')?.replaceChildren(pr.potential);
       })
       .catch(() => {})
       .finally(() => {
-        banner?.remove();
-        [diagnosisChain, test, potential, roadmap].forEach((el) => el.classList.remove('is-loading'));
+        loader?.remove();
+        [diagnosis, diagnosisChain, test, outcome].forEach((el) => el.classList.remove('is-loading'));
       });
   }
 }
