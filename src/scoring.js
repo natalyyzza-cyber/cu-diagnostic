@@ -64,8 +64,9 @@ export function modelCoverage(matrix = {}) {
 
 export function scoreQ8(matrix = {}) {
   const coverage = modelCoverage(matrix);
-  const domains = Object.values(coverage).filter(x => x.yes > 0).length;
-  const yes = Object.values(coverage).reduce((sum, x) => sum + x.yes, 0);
+  const blocks = Object.values(coverage).filter(Boolean);
+  const domains = blocks.filter(x => x.yes > 0).length;
+  const yes = blocks.reduce((sum, x) => sum + x.yes, 0);
   if (domains === 3 && yes >= 6) return 1;
   if (domains >= 2 && yes >= 3) return 0.5;
   return 0;
