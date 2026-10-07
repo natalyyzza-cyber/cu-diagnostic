@@ -335,17 +335,33 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
   const r = result;
   const loading = personalize && config.aiEnabled && !r.personalized;
   const firstName = (name || '').split(/\s+/)[0];
+  const d = r.diagnosis || {};
 
-  const scoreCard = h('section', { class: 'card result-head' },
-    h('p', { class: 'eyebrow' }, firstName ? `${firstName}, ваш результат` : 'Ваш результат'),
-    h('div', { class: 'score-text' },
-      h('h1', { class: 'result-title' }, r.resultStage.text),
-      h('p', { class: 'result-stage' }, 'Главный вывод диагностики — что сейчас сильнее всего влияет на следующий шаг проекта.')),
-    h('dl', { class: 'facts' },
-      h('div', {}, h('dt', {}, 'Формат'), h('dd', {}, [r.format, r.audience ? `для: ${r.audience}` : null].filter(Boolean).join(' · '))),
-      h('div', {}, h('dt', {}, 'Стадия'), h('dd', {}, r.stage.label)),
-      h('div', {}, h('dt', {}, 'Ваш проект'), h('dd', { class: 'quote' }, `«${r.problem}»`)),
+  const diagnosis = h('section', { class: 'card result-head result-diagnosis' },
+    h('p', { class: 'eyebrow' }, firstName ? `${firstName}, диагностика проекта` : 'Диагностика проекта'),
+    h('h1', { class: 'result-title' }, d.headline || 'Главный вопрос следующего шага'),
+    h('p', { class: 'diagnosis-summary' }, d.summary || 'Сейчас важно получить следующий практический факт о проекте.'),
+    h('div', { class: 'diagnosis-context' },
+      h('div', {}, h('span', { class: 'diagnosis-context__label' }, 'Стадия'), h('strong', {}, r.stage.label)),
+      h('div', {}, h('span', { class: 'diagnosis-context__label' }, 'Формат'), h('strong', {}, r.format)),
+      r.audience ? h('div', {}, h('span', { class: 'diagnosis-context__label' }, 'Аудитория'), h('strong', {}, r.audience)) : null,
     ),
+  );
+
+  const diagnosisChain = h('section', { class: 'card block diagnosis-chain' },
+    h('h2', { class: 'block__title' }, 'Что это значит для проекта'),
+    d.confirmed?.length
+      ? h('div', { class: 'diagnosis-part' },
+          h('h3', {}, 'На что уже можно опираться'),
+          h('ul', { class: 'items' }, d.confirmed.slice(0,3).map(x => h('li', { class: 'item' }, h('p', {}, x)))))
+      : null,
+    h('div', { class: 'diagnosis-part' },
+      h('h3', {}, 'Что сейчас стоит проверить'),
+      h('p', {}, d.openQuestion || 'Какой следующий факт нужен, чтобы принять решение о проекте?')),
+    h('div', { class: 'diagnosis-part' },
+      h('h3', {}, 'Почему это важно сейчас'),
+      h('p', {}, d.whyNow || 'Этот вопрос связан с ближайшим практическим шагом проекта.')),
+    d.stageContext ? h('p', { class: 'muted diagnosis-note' }, d.stageContext) : null,
   );
 
   const loader = (label) => h('div', { class: 'ai-loading' }, h('span', { class: 'spinner' }), label);
@@ -356,37 +372,38 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
       items.length
         ? h('ol', { class: 'items' },
             items.map((it) => h('li', { class: 'item' },
-              h('div', { class: 'item__head' },
-                h('h3', {}, it.title),),
+              h('div', { class: 'item__head' }, h('h3', {}, it.title)),
               h('p', { 'data-text': `${kind}-${it.id}` }, it.text))))
         : h('p', { class: 'muted' },
             kind === 'strength'
-              ? 'Пока ни один показатель не набрал максимального балла — это нормально для проекта на ранней стадии. Сильные стороны появятся по мере того, как вы будете проверять идею на практике.'
-              : 'По всем показателям диагностики у проекта максимальный балл. Фокус — на развитии и масштабе.'),
+              ? 'Пока нет отдельных показателей, на которые можно уверенно опереться. Это нормально для ранней стадии: следующая практика даст такие опоры.'
+              : 'Сейчас нет отдельной зоны для развития, которую методика выделяет как приоритетную. Фокус — на проверке главного вопроса проекта.'),
     );
 
-  const interpretation = h('section', { class: 'card block' },
-    h('h2', { class: 'block__title' }, 'Как читать этот результат'),
-    h('p', {}, 'Диагностика учитывает стадию проекта, практические действия и то, насколько ответы подтверждают друг друга.'),
-    h('p', { class: 'muted' }, 'Надёжность вывода: ' + (r.confidence?.label || 'предварительная') + '.'));
+  const diagnosticNote = (() => {
+    const flags = [];
+    if (r.contradictions?.length) flags.push(...r.contradictions.map(x => 'Есть расхождение в ответах: ' + x));
+    if (r.subjectiveMismatch) flags.push(r.subjectiveMismatch.text);
+    if (r.confidence?.id !== 'high' && d.confidenceNote) flags.push(d.confidenceNote);
+    return flags.length
+      ? h('section', { class: 'card block block--accent' },
+          h('h2', { class: 'block__title' }, 'Что важно учесть'),
+          h('ul', { class: 'items' }, flags.slice(0, 3).map(x => h('li', { class: 'item' }, h('p', {}, x)))))
+      : null;
+  })();
 
-  const flags = [];
-  if (r.stageFit?.length) flags.push(...r.stageFit);
-  if (r.contradictions?.length) flags.push(...r.contradictions.map(x => 'Есть расхождение в ответах: ' + x));
-  if (r.subjectiveMismatch) flags.push(r.subjectiveMismatch.text);
-  const diagnosticNote = flags.length
-    ? h('section', { class: 'card block block--accent' },
-        h('h2', { class: 'block__title' }, 'Что важно учесть'),
-        h('ul', { class: 'items' }, flags.slice(0, 4).map(x => h('li', { class: 'item' }, h('p', {}, x)))))
-    : null;
+  const test = h('section', { class: 'card block block--accent result-test' },
+    h('p', { class: 'eyebrow' }, 'Следующий эксперимент'),
+    h('h2', { class: 'block__title' }, 'Сделайте это следующим'),
+    h('p', { class: 'next-step', 'data-text': 'next' }, d.nextTest || r.nextStep),
+    h('div', { class: 'decision' },
+      h('h3', {}, 'Что делать по результату'),
+      h('p', { 'data-text': 'decision' }, d.decisionAfterTest || 'Используйте результат действия, чтобы решить, что закрепить, изменить или передать дальше.')),
+  );
 
   const potential = h('section', { class: 'card block' },
-    h('h2', { class: 'block__title' }, 'Потенциал развития'),
+    h('h2', { class: 'block__title' }, 'Что изменится после этого шага'),
     h('p', { 'data-text': 'potential' }, r.potential));
-
-  const nextStep = h('section', { class: 'card block block--accent' },
-    h('h2', { class: 'block__title' }, 'Ваш ближайший шаг'),
-    h('p', { class: 'next-step', 'data-text': 'next' }, r.nextStep));
 
   const roadmapList = h('ol', { class: 'roadmap' });
   const fillRoadmap = (steps) => roadmapList.replaceChildren(
@@ -395,11 +412,9 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
       h('div', {}, h('h3', {}, s.title), s.text ? h('p', {}, s.text) : null))));
   fillRoadmap(r.roadmap);
   const roadmap = h('section', { class: 'card block' },
-    h('h2', { class: 'block__title' }, 'Роадмап на год'),
-    h('p', { class: 'muted' }, 'Шаги, которые реально сделать в течение года — с учётом стадии проекта, результатов диагностики и вашего запроса.'),
+    h('h2', { class: 'block__title' }, 'План развития на год'),
+    h('p', { class: 'muted' }, 'Последовательность действий: сначала проверить главное ограничение, затем принимать следующие решения по результатам.'),
     roadmapList);
-
-
 
   const track = (type) => () => {
     try {
@@ -411,7 +426,7 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
 
   const cta = h('section', { class: 'cta' },
     h('h2', {}, 'Разберём ваш проект вместе'),
-    h('p', {}, 'Эксперты Городского университета 2.0 помогут превратить роадмап в план действий, а Школа городских продюсеров — пройти путь от идеи до работающего городского продукта.'),
+    h('p', {}, 'Эксперты Городского университета 2.0 помогут превратить результаты диагностики в план действий, а Школа городских продюсеров — пройти путь от идеи до работающего городского продукта.'),
     h('div', { class: 'cta__buttons' },
       h('a', { class: 'btn btn--primary btn--lg', href: config.consultationUrl, target: '_blank', rel: 'noopener', onclick: track('consultation') },
         'Записаться на бесплатную консультацию экспертов ГУ 2.0 по вашему проекту — 30 минут'),
@@ -432,19 +447,19 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
     h('button', { class: 'btn btn--ghost', onclick: () => { resetState(); history.pushState({}, '', '/'); renderIntro(); } }, 'Пройти заново'),
   );
 
-  const banner = loading ? loader('Готовим персональные рекомендации и роадмап под ваш проект…') : null;
+  const banner = loading ? loader('Готовим персональное диагностическое заключение и план действий…') : null;
 
   render(
     h('div', { class: 'result' },
-      scoreCard,
-      interpretation,
+      diagnosis,
+      diagnosisChain,
       diagnosticNote,
       banner,
       h('div', { class: 'grid-2' },
-        listSection('Что сейчас уже хорошо получается', r.strengths, 'strength'),
+        listSection('На что уже можно опираться', r.strengths, 'strength'),
         listSection('Что сейчас стоит развивать', r.growthZones, 'growth')),
+      test,
       potential,
-      nextStep,
       roadmap,
       cta,
       tools,
@@ -452,23 +467,28 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
   );
 
   if (loading) {
-    [potential, nextStep, roadmap].forEach((el) => el.classList.add('is-loading'));
+    [diagnosisChain, test, potential, roadmap].forEach((el) => el.classList.add('is-loading'));
     waitForPersonalization(id)
       .then((pr) => {
         if (!pr?.personalized) return;
+        const pd = pr.diagnosis || {};
+        app.querySelector('.result-title')?.replaceChildren(pd.headline || d.headline);
+        app.querySelector('.diagnosis-summary')?.replaceChildren(pd.summary || d.summary);
+        const chainParts = app.querySelectorAll('.diagnosis-part');
+        if (chainParts[0]) chainParts[0].querySelector('ul')?.replaceChildren(...(pd.confirmed || []).slice(0,3).map(x => h('li', { class: 'item' }, h('p', {}, x))));
+        if (chainParts[1]) chainParts[1].querySelector('p')?.replaceChildren(pd.openQuestion || d.openQuestion);
+        if (chainParts[2]) chainParts[2].querySelector('p')?.replaceChildren(pd.whyNow || d.whyNow);
+        app.querySelector('.diagnosis-note')?.replaceChildren(pd.stageContext || d.stageContext || '');
+        app.querySelector('[data-text="next"]')?.replaceChildren(pd.nextTest || pr.nextStep);
+        app.querySelector('[data-text="decision"]')?.replaceChildren(pd.decisionAfterTest || d.decisionAfterTest);
         for (const it of pr.strengths) app.querySelector(`[data-text="strength-${it.id}"]`)?.replaceChildren(it.text);
         for (const it of pr.growthZones) app.querySelector(`[data-text="growth-${it.id}"]`)?.replaceChildren(it.text);
         app.querySelector('[data-text="potential"]')?.replaceChildren(pr.potential);
-        app.querySelector('[data-text="next"]')?.replaceChildren(pr.nextStep);
-        fillRoadmap(pr.roadmap);
-        if (pr.problemUnclear) {
-          app.querySelector('.quote')?.after(h('span', { class: 'hint-inline' }, 'Совет: попробуйте сформулировать проблему конкретнее — для кого она существует, где проявляется и что именно происходит.'));
-        }
       })
       .catch(() => {})
       .finally(() => {
         banner?.remove();
-        [potential, nextStep, roadmap].forEach((el) => el.classList.remove('is-loading'));
+        [diagnosisChain, test, potential, roadmap].forEach((el) => el.classList.remove('is-loading'));
       });
   }
 }
