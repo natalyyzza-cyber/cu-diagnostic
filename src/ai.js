@@ -1,4 +1,5 @@
 // Персонализация текста результата через провайдера с протоколом OpenAI.
+// Контактные данные (имя, email) в запрос к модели не передаются; передаются только ответы диагностики и данные результата.
 // Баллы, сильные стороны и зоны роста уже выбраны кодом по методике (src/scoring.js);
 // модель только переписывает тексты под конкретный проект и составляет роадмап на год.
 // Если ключа нет или запрос не удался — остаётся шаблонный результат.
@@ -11,7 +12,7 @@ import { INDICATORS } from './scoring.js';
 // локальный vLLM или Ollama. Достаточно ключа и, при необходимости, базового адреса.
 const API_KEY = process.env.OPENAI_API_KEY || '';
 const BASE_URL = process.env.OPENAI_BASE_URL || undefined;
-const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const MODEL = process.env.OPENAI_MODEL || 'gpt-6-luna';
 
 export const aiEnabled = Boolean(API_KEY);
 
@@ -163,25 +164,30 @@ function describeScoredAnswers(a) {
 export async function personalize(record) {
   if (!client) return null;
 
-  const response = await client.chat.completions.create({
+  const response = await client.responses.create({
     model: MODEL,
-    max_tokens: 16000,
-    response_format: {
-      type: 'json_schema',
-      json_schema: { name: 'diagnosis', strict: true, schema: OUTPUT_SCHEMA },
+    instructions: SYSTEM_PROMPT,
+    input: describeAnswers(record),
+    max_output_tokens: 16000,
+    store: false,
+    text: {
+      format: {
+        type: 'json_schema',
+        name: 'diagnosis',
+        strict: true,
+        schema: OUTPUT_SCHEMA,
+      },
     },
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: describeAnswers(record) },
-    ],
   });
 
-  const choice = response.choices?.[0];
-  if (!choice || choice.finish_reason === 'length' || choice.finish_reason === 'content_filter') {
-    console.warn(`Персонализация не выполнена: finish_reason=${choice?.finish_reason ?? 'empty'}`);
+  if (response.status !== 'completed') {
+    console.warn(
+      `Персонализация не выполнена: status=${response.status ?? 'unknown'}` +
+      (response.incomplete_details?.reason ? `, reason=${response.incomplete_details.reason}` : ''),
+    );
     return null;
   }
-  const text = choice.message?.content ?? '';
+  const text = response.output_text ?? '';
   let data;
   try {
     data = JSON.parse(text);
