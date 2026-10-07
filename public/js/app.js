@@ -339,13 +339,9 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
 
   const scoreCard = h('section', { class: 'card result-head' },
     h('p', { class: 'eyebrow' }, firstName ? `${firstName}, ваш результат` : 'Ваш результат'),
-    h('div', { class: 'score' },
-      h('div', { class: 'score__ring', style: `--p:${pct}` },
-        h('span', { class: 'score__num' }, fmt(r.total)),
-        h('span', { class: 'score__max' }, `из ${r.max}`)),
-      h('div', { class: 'score__text' },
-        h('h1', { class: 'result-title' }, `Ваш проект: ${fmt(r.total)} из ${r.max} баллов`),
-        h('p', { class: 'result-stage' }, r.resultStage.text))),
+    h('div', { class: 'score-text' },
+      h('h1', { class: 'result-title' }, r.resultStage.text),
+      h('p', { class: 'result-stage' }, 'Главный вывод диагностики — что сейчас сильнее всего влияет на следующий шаг проекта.')),
     h('dl', { class: 'facts' },
       h('div', {}, h('dt', {}, 'Формат'), h('dd', {}, [r.format, r.audience ? `для: ${r.audience}` : null].filter(Boolean).join(' · '))),
       h('div', {}, h('dt', {}, 'Стадия'), h('dd', {}, r.stage.label)),
@@ -362,8 +358,7 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
         ? h('ol', { class: 'items' },
             items.map((it) => h('li', { class: 'item' },
               h('div', { class: 'item__head' },
-                h('h3', {}, it.title),
-                h('span', { class: `badge badge--${kind}` }, `${fmt(it.score)}/${it.max}`)),
+                h('h3', {}, it.title),),
               h('p', { 'data-text': `${kind}-${it.id}` }, it.text))))
         : h('p', { class: 'muted' },
             kind === 'strength'
@@ -373,8 +368,8 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
 
   const interpretation = h('section', { class: 'card block' },
     h('h2', { class: 'block__title' }, 'Как читать этот результат'),
-    h('p', {}, 'Итоговый балл — ориентир, а не оценка качества проекта. Интерпретация учитывает стадию проекта и то, насколько ответы подтверждают друг друга.'),
-    h('p', { class: 'muted' }, 'Надёжность результата: ' + (r.confidence?.label || 'предварительная') + '.'));
+    h('p', {}, 'Диагностика учитывает стадию проекта, практические действия и то, насколько ответы подтверждают друг друга.'),
+    h('p', { class: 'muted' }, 'Надёжность вывода: ' + (r.confidence?.label || 'предварительная') + '.'));
 
   const flags = [];
   if (r.stageFit?.length) flags.push(...r.stageFit);
@@ -405,13 +400,7 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
     h('p', { class: 'muted' }, 'Шаги, которые реально сделать в течение года — с учётом стадии проекта, результатов диагностики и вашего запроса.'),
     roadmapList);
 
-  const profile = h('details', { class: 'card profile' },
-    h('summary', {}, 'Подробный профиль показателей'),
-    h('ul', { class: 'bars' },
-      r.scores.map((s) => h('li', { class: 'bar' },
-        h('span', { class: 'bar__name' }, s.name),
-        h('span', { class: 'bar__track' }, h('span', { class: 'bar__fill', style: `width:${(s.score / s.max) * 100}%` })),
-        h('span', { class: 'bar__val' }, `${fmt(s.score)}/${s.max}`)))));
+
 
   const track = (type) => () => {
     try {
