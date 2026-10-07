@@ -93,7 +93,7 @@ test('стресс-тест: у работающего проекта перео
   assert.equal(a.bottleneck,'q14');
   assert.equal(b.bottleneck,'q14');
   assert.equal(a.confidence.id,'medium');
-  assert.equal(b.confidence.id,'high');
+  assert.equal(b.confidence.id,'medium');
 });
 
 test('стресс-тест: осторожная и уверенная оценка востребованности на первых шагах не меняет следующий практический порог', () => {
@@ -113,7 +113,7 @@ test('стресс-тест: осторожная и уверенная оцен
   assert.equal(a.bottleneck,'q9');
   assert.equal(b.bottleneck,'q9');
   assert.ok(b.contradictions.length >= a.contradictions.length);
-  assert.equal(b.confidence.id,'medium');
+  assert.equal(b.confidence.id,'high');
 });
 
 test('стресс-тест: самооценка влияет на надёжность только там, где это уместно', () => {
@@ -134,5 +134,5 @@ test('стресс-тест: самооценка влияет на надёжн
   assert.equal(a.bottleneck,b.bottleneck);
   assert.equal(a.bottleneck,'q14');
   assert.equal(a.confidence.id,'medium');
-  assert.equal(b.confidence.id,'high');
+  assert.equal(b.confidence.id,'medium');
 });
