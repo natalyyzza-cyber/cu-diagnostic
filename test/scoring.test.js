@@ -157,3 +157,16 @@ test('запрос участника может отличаться от ди�
   assert.ok(r.subjectiveMismatch);
   assert.equal(r.need.id, 'scaling');
 });
+
+
+test('Q15: любой пользовательский запрос безопасно проходит полный расчёт', () => {
+  const needs = ['audience_needs','concept','team','partners','pilot','packaging','economics','city','funding','promotion','scaling','unknown'];
+  for (const need of needs) {
+    const { answers, errors } = normalizeAnswers({ ...maximal, q15: need });
+    assert.deepEqual(errors, [], `q15=${need}`);
+    const r = buildResult({ answers, segment: 'private' });
+    assert.equal(r.need.id, need);
+    assert.ok(r.nextStep.length > 100, `nextStep q15=${need}`);
+    assert.ok(r.roadmap.length >= 5, `roadmap q15=${need}`);
+  }
+});
