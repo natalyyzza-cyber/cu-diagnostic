@@ -1,12 +1,14 @@
-name: Debug test output
+name: Debug test matrix
 on:
   push:
     branches: ["claude/urban-projects-diagnostic-f96myi"]
 jobs:
-  debug:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        testfile: ["test/scoring.test.js","test/ai-merge.test.js","test/diagnosis-formats.test.js"]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -14,15 +16,4 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install
-      - name: Run tests and report
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SHA: ${{ github.sha }}
-          REPO: ${{ github.repository }}
-        run: |
-          set +e
-          npm test > /tmp/test.log 2>&1
-          code=$?
-          tail -c 12000 /tmp/test.log > /tmp/test-tail.txt
-          gh api --method POST "/repos/$REPO/commits/$SHA/comments" -f body="$(cat /tmp/test-tail.txt)"
-          exit $code
+      - run: node --test ${{ matrix.testfile }}
