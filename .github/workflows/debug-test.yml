@@ -1,17 +1,19 @@
-name: Debug syntax
+name: Debug test names
 on:
   push:
     branches: ["claude/urban-projects-diagnostic-f96myi"]
 jobs:
-  syntax:
+  test:
     strategy:
       fail-fast: false
       matrix:
-        file: ["src/scoring.js","src/ai.js","public/js/questions.js"]
+        name: ["максимальная сумма баллов","минимальные и максимальные ответы","Q7: роль автора","Q8: покрывает три блока","Q13: виды ресурсов","валидация","интерпретация общего балла","главное ограничение","Q15 не переопределяет","у каждого возможного балла","полный результат","стадия «идея»","стадийная интерпретация","противоречия снижают","запрос участника"]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --check ${{ matrix.file }}
+          cache: npm
+      - run: npm install
+      - run: node --test test/scoring.test.js --test-name-pattern="${{ matrix.name }}"
