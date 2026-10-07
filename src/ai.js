@@ -12,7 +12,7 @@ import { INDICATORS } from './scoring.js';
 // локальный vLLM или Ollama. Достаточно ключа и, при необходимости, базового адреса.
 const API_KEY = process.env.OPENAI_API_KEY || '';
 const BASE_URL = process.env.OPENAI_BASE_URL || undefined;
-const MODEL = process.env.OPENAI_MODEL || 'gpt-6-luna';
+const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
 export const aiEnabled = Boolean(API_KEY);
 
