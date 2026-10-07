@@ -1,18 +1,23 @@
-// Персонализация текста результата через Claude API.
+// Персонализация текста результата через провайдера с протоколом OpenAI.
 // Баллы, сильные стороны и зоны роста уже выбраны кодом по методике (src/scoring.js);
 // модель только переписывает тексты под конкретный проект и составляет роадмап на год.
 // Если ключа нет или запрос не удался — остаётся шаблонный результат.
 
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { MAX_SCORE } from '../public/js/questions.js';
 import { INDICATORS } from './scoring.js';
 
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-5-5';
-const EFFORT = process.env.ANTHROPIC_EFFORT || 'low';
+// Любой провайдер с протоколом OpenAI: официальный OpenAI, OpenRouter, Groq,
+// локальный vLLM или Ollama. Достаточно ключа и, при необходимости, базового адреса.
+const API_KEY = process.env.OPENAI_API_KEY || '';
+const BASE_URL = process.env.OPENAI_BASE_URL || undefined;
+const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
-export const aiEnabled = Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
+export const aiEnabled = Boolean(API_KEY);
 
-const client = aiEnabled ? new Anthropic({ timeout: 120_000, maxRetries: 1 }) : null;
+const client = aiEnabled
+  ? new OpenAI({ apiKey: API_KEY, baseURL: BASE_URL, timeout: 120_000, maxRetries: 1 })
+  : null;
 
 const SYSTEM_PROMPT = `Ты — эксперт Городского университета 2.0 по развитию городских проектов, работаешь по методологии городского продюсирования Святослава Мурунова (канвас городского проекта, критерии оценки проектов Школы городских продюсеров).
 
@@ -158,24 +163,25 @@ function describeScoredAnswers(a) {
 export async function personalize(record) {
   if (!client) return null;
 
-  const response = await client.beta.messages.create({
+  const response = await client.chat.completions.create({
     model: MODEL,
     max_tokens: 16000,
-    betas: ['server-side-fallback-2026-07-01'],
-    fallbacks: 'default',
-    output_config: {
-      effort: EFFORT,
-      format: { type: 'json_schema', schema: OUTPUT_SCHEMA },
+    response_format: {
+      type: 'json_schema',
+      json_schema: { name: 'diagnosis', strict: true, schema: OUTPUT_SCHEMA },
     },
-    system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: describeAnswers(record) }],
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: describeAnswers(record) },
+    ],
   });
 
-  if (response.stop_reason === 'refusal' || response.stop_reason === 'max_tokens') {
-    console.warn(`Персонализация не выполнена: stop_reason=${response.stop_reason}`);
+  const choice = response.choices?.[0];
+  if (!choice || choice.finish_reason === 'length' || choice.finish_reason === 'content_filter') {
+    console.warn(`Персонализация не выполнена: finish_reason=${choice?.finish_reason ?? 'empty'}`);
     return null;
   }
-  const text = response.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
+  const text = choice.message?.content ?? '';
   let data;
   try {
     data = JSON.parse(text);

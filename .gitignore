@@ -5,3 +5,6 @@ data/*.json
 # Local Netlify folder
 .netlify
 .netlify/
+
+# Отчёт авто-теста диагностики
+test/diagnosis-report.html

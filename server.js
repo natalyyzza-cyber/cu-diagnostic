@@ -22,7 +22,7 @@ app.get('/r/:id', (c) => c.html(fs.readFileSync('./public/index.html', 'utf8')))
 
 serve({ fetch: app.fetch, port: PORT }, () => {
   console.log(`Диагностика запущена: http://localhost:${PORT}`);
-  console.log(`ИИ-персонализация: ${aiEnabled ? 'включена' : 'выключена (нет ANTHROPIC_API_KEY)'}`);
+  console.log(`ИИ-персонализация: ${aiEnabled ? 'включена' : 'выключена (нет OPENAI_API_KEY)'}${process.env.OPENAI_BASE_URL ? ` (${process.env.OPENAI_BASE_URL})` : ''}`);
   console.log(`Хранилище: ${storageName()}`);
   if (!process.env.ADMIN_PASSWORD) console.log('Админка выключена: задайте ADMIN_PASSWORD');
 });
