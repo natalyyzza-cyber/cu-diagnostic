@@ -19,7 +19,7 @@ const cases = [
   {name:'Пилот: Q6 и Q14 почти равны', overrides:{q6:'alone',q14:'stops',q11:'sources',q12:'demand'}, expected:'q6'},
   {name:'Работающий: Q14 против Q11', overrides:{q1:'working',q9:'regular',q10:'changed',q11:'unknown',q12:'demand',q13:['audience','venue','partners'],q14:'stops',q6:'helpers'}, expected:'q14'},
   {name:'Работающий: Q11 против Q12, оба слабые', overrides:{q1:'working',q9:'regular',q10:'changed',q11:'unknown',q12:'none',q13:['audience','venue','partners','experience'],q14:'directions',q6:'gathering'}, expected:'q11'},
-  {name:'Первые шаги: Q9 против Q12', overrides:{q1:'first_steps',q9:'started',q10:'feedback',q11:'who',q12:'none',q13:['audience','venue'],q14:'stops'}, expected:'q9'},
+  {name:'Первые шаги: Q9 против Q12', overrides:{q1:'first_steps',q9:'started',q10:'feedback',q11:'who',q12:'research',q13:['audience','venue'],q14:'stops'}, expected:'q9'},
 ];
 
 test('пограничные профили: система выбирает ограничение не случайно', () => {
