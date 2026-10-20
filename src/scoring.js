@@ -421,10 +421,10 @@ function buildConfirmed({answers,format,audience}) {
   if (['research','data','demand'].includes(answers.q12)) items.push('Вы указали на исследование, данные или действия аудитории. Сила этого сигнала зависит от того, что именно наблюдали и на скольких людях.');
   if (['model','sources'].includes(answers.q11)) items.push('Вы описали возможные источники поддержки и ресурсы проекта; наличие договорённостей и доступность этих ресурсов отдельно не проверялись.');
   if (!items.length) {
-    items.push('Идея проекта и его формат уже сформулированы.');
-    if (audience) items.push(`Вы уже обозначили аудиторию: ${audience}.`);
+    items.push('В анкете указан формат проекта; насколько он точно описывает текущую практику, ответы сами по себе не подтверждают.');
+    if (audience) items.push(`В ответах обозначена предполагаемая аудитория: ${audience}.`);
   }
-  if (format && items.length < 3) items.push(`Формат проекта уже определён: ${format}.`);
+  if (format && items.length < 3) items.push(`В анкете указан формат проекта: ${format}.`);
   return items.slice(0,3);
 }
 
