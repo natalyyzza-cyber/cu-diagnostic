@@ -7,7 +7,7 @@ const base = {
   q4:'Помогаем жителям района регулярно встречаться и решать общие локальные задачи.',
   q5:'b', q6:'helpers',
   q7:['concept','audience','launch'],
-  q8:{audience:'yes',value:'yes',participants:'yes',partners:'no',resources:'no',funding:'no',costs:'no',revenue:'no'},
+  q8:{audience:'defined',value:'defined',participants:'defined',partners:'unknown',resources:'unknown',funding:'unknown',costs:'unknown',revenue:'unknown'},
   q9:'started', q10:'no_analysis', q11:'unknown', q12:'none',
   q13:['audience'], q14:'stops', q15:'unknown'
 };
@@ -47,7 +47,7 @@ const cases = [
     'q9','Здесь ожидаем противоречие и предварительную надёжность; фактическая проверка практикой важнее заявления о стадии.'),
   scenario('10. Идея с почти полной моделью, но без аудитории',
     {q1:'idea',q5:'b',q9:'thinking',q10:'none',q11:'model',q12:'none',q13:['partners','venue','experts'],q14:'stops',q3:['unknown'],
-     q8:{audience:'no',value:'yes',participants:'yes',partners:'yes',resources:'yes',funding:'yes',costs:'yes',revenue:'yes'},q15:'packaging'},
+     q8:{audience:'unknown',value:'defined',participants:'defined',partners:'defined',resources:'defined',funding:'defined',costs:'defined',revenue:'defined'},q15:'packaging'},
     'q12','Проверяем, не переоценивает ли система проработку модели при отсутствии реального подтверждения спроса.')
 ];
 
