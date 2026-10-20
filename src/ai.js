@@ -85,7 +85,7 @@ const OUTPUT_SCHEMA = {
     diagnosis: {
       type: 'object',
       additionalProperties: false,
-      required: ['headline','summary','confirmed','open_question','why_now','next_test','decision_after_test','confidence_note','stage_context'],
+      required: ['headline','summary','confirmed','open_question','why_now','next_test','decision_after_test','outcome','confidence_note','stage_context'],
       properties: {
         headline: { type: 'string' },
         summary: { type: 'string' },
