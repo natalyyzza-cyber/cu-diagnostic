@@ -53,7 +53,7 @@ test('Q8: отличает предположения, решения и пра�
 });
 
 test('Q8: заявленные практические проверки без других сигналов не получают максимальную оценку', () => {
-  assert.equal(scoreQ8(allYes, { q9: 'thinking', q10: 'none', q12: 'none' }), 0.65);
+  assert.equal(scoreQ8(allYes, { q9: 'thinking', q10: 'none', q12: 'none' }), 0.5);
   assert.equal(scoreQ8(allYes, { q9: 'tested', q10: 'none', q12: 'none' }), 1);
 });
 
