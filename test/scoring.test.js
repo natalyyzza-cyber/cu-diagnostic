@@ -55,7 +55,19 @@ test('Q8: отличает предположения, решения и пра�
 
 test('Q8: заявленные практические проверки без других сигналов не получают максимальную оценку', () => {
   assert.equal(scoreQ8(allYes, { q9: 'thinking', q10: 'none', q12: 'none' }), 0.5);
-  assert.equal(scoreQ8(allYes, { q9: 'tested', q10: 'none', q12: 'none' }), 1);
+  assert.equal(scoreQ8(allYes, { q9: 'tested', q10: 'none', q12: 'none' }), 0.5, 'одного заявления о запуске недостаточно для максимальной оценки модели');
+});
+
+test('Q8: «проверено на практике» без описанного результата не даёт максимальную оценку', () => {
+  const answers = { q8: allYes, q9: 'tested', q10: 'none', q12: 'none' };
+  assert.equal(scoreQ8(answers.q8, answers), 0.5);
+  const full = {
+    ...maximal, q1: 'pilot', q8: allYes, q9: 'tested', q10: 'none',
+    q11: 'unknown', q12: 'none', q13: ['venue'], q14: 'partly'
+  };
+  const { answers: normalized } = normalizeAnswers(full);
+  const result = buildResult({ answers: normalized, segment: 'private' });
+  assert.ok(result.contradictions.some(x => /второго независимого сигнала/i.test(x)));
 });
 
 test('Q8: неподтверждённая самооценка не считается практическим свидетельством', () => {
