@@ -33,6 +33,7 @@ function answersFor(index) {
     else raw[q.id] = sampleByType[q.type](q);
     Object.assign(raw, otherText(q));
   }
+  if (Object.values(raw.q8 ?? {}).includes('tested')) raw.q8_outcome = 'used';
   return raw;
 }
 
