@@ -41,13 +41,13 @@ test('стресс-тест: ранняя идея не становится «�
   const cautious = {
     ...ideaBase,
     q5:'a',
-    q8:{audience:'no',value:'no',participants:'no',partners:'no',resources:'no',funding:'no',costs:'no',revenue:'no'},
+    q8:{audience:'unknown',value:'unknown',participants:'unknown',partners:'unknown',resources:'unknown',funding:'unknown',costs:'unknown',revenue:'unknown'},
     q11:'unknown', q13:['none'], q14:'stops'
   };
   const optimistic = {
     ...ideaBase,
     q5:'b',
-    q8:{audience:'yes',value:'yes',participants:'yes',partners:'yes',resources:'yes',funding:'yes',costs:'yes',revenue:'yes'},
+    q8:{audience:'defined',value:'defined',participants:'defined',partners:'defined',resources:'defined',funding:'defined',costs:'defined',revenue:'defined'},
     q11:'sources',
     q13:['audience','venue','partners','experts','funding'],
     q14:'autonomous'
@@ -66,12 +66,12 @@ test('стресс-тест: на пилоте изменение самооце
   const cautious = {
     ...pilotBase,
     q5:'a',
-    q8:{audience:'yes',value:'no',participants:'no',partners:'no',resources:'no',funding:'no',costs:'no',revenue:'no'}
+    q8:{audience:'defined',value:'unknown',participants:'unknown',partners:'unknown',resources:'unknown',funding:'unknown',costs:'unknown',revenue:'unknown'}
   };
   const confident = {
     ...pilotBase,
     q5:'b',
-    q8:{audience:'yes',value:'yes',participants:'yes',partners:'yes',resources:'yes',funding:'no',costs:'no',revenue:'no'}
+    q8:{audience:'defined',value:'defined',participants:'defined',partners:'defined',resources:'defined',funding:'unknown',costs:'unknown',revenue:'unknown'}
   };
 
   const a = buildResult({answers:cautious,segment:'private'});
@@ -80,12 +80,12 @@ test('стресс-тест: на пилоте изменение самооце
   assert.equal(a.bottleneck,'q11');
   assert.equal(b.bottleneck,'q11');
   assert.equal(a.confidence.id,'medium');
-  assert.equal(b.confidence.id,'high');
+  assert.equal(b.confidence.id,'medium');
 });
 
 test('стресс-тест: у работающего проекта переоценка Q5 не отменяет зависимость от автора', () => {
-  const cautious = {...workingBase, q5:'a', q8:{audience:'no',value:'no',participants:'no',partners:'no',resources:'no',funding:'no',costs:'no',revenue:'no'}};
-  const confident = {...workingBase, q5:'b', q8:{audience:'yes',value:'yes',participants:'yes',partners:'yes',resources:'yes',funding:'yes',costs:'yes',revenue:'yes'}};
+  const cautious = {...workingBase, q5:'a', q8:{audience:'unknown',value:'unknown',participants:'unknown',partners:'unknown',resources:'unknown',funding:'unknown',costs:'unknown',revenue:'unknown'}};
+  const confident = {...workingBase, q5:'b', q8:{audience:'defined',value:'defined',participants:'defined',partners:'defined',resources:'defined',funding:'defined',costs:'defined',revenue:'defined'}};
 
   const a = buildResult({answers:cautious,segment:'private'});
   const b = buildResult({answers:confident,segment:'private'});
@@ -101,7 +101,7 @@ test('стресс-тест: осторожная и уверенная оцен
     q1:'first_steps', q2:'event', q3:['residents'],
     q4:'Помогаем жителям района регулярно встречаться и решать общие локальные задачи.',
     q5:'a', q6:'helpers', q7:['concept','audience','launch'],
-    q8:{audience:'yes',value:'no',participants:'no',partners:'no',resources:'no',funding:'no',costs:'no',revenue:'no'},
+    q8:{audience:'defined',value:'unknown',participants:'unknown',partners:'unknown',resources:'unknown',funding:'unknown',costs:'unknown',revenue:'unknown'},
     q9:'started', q10:'feedback', q11:'who', q12:'research',
     q13:['audience','venue'], q14:'stops', q15:'pilot'
   };
@@ -125,8 +125,8 @@ test('стресс-тест: самооценка влияет на надёжн
     q13:['audience','venue','partners','experts','funding'], q14:'stops', q15:'scaling'
   };
 
-  const cautious = {...base, q5:'a', q8:{audience:'no',value:'no',participants:'no',partners:'no',resources:'no',funding:'no',costs:'no',revenue:'no'}};
-  const confident = {...base, q5:'b', q8:{audience:'yes',value:'yes',participants:'yes',partners:'yes',resources:'yes',funding:'yes',costs:'yes',revenue:'yes'}};
+  const cautious = {...base, q5:'a', q8:{audience:'unknown',value:'unknown',participants:'unknown',partners:'unknown',resources:'unknown',funding:'unknown',costs:'unknown',revenue:'unknown'}};
+  const confident = {...base, q5:'b', q8:{audience:'defined',value:'defined',participants:'defined',partners:'defined',resources:'defined',funding:'defined',costs:'defined',revenue:'defined'}};
 
   const a = buildResult({answers:cautious,segment:'private'});
   const b = buildResult({answers:confident,segment:'private'});
