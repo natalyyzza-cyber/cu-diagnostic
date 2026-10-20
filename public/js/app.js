@@ -260,7 +260,7 @@ function renderQuestion() {
         h('div', { class: 'matrix__choices' },
           q.columns.map((c) => {
             const input = h('input', { type: 'radio', name: `${q.id}-${r.id}`, value: c.id, checked: a[q.id][r.id] === c.id });
-            input.addEventListener('change', () => { a[q.id][r.id] = c.id; sync(); });
+            input.addEventListener('change', () => { a[q.id][r.id] = c.id; if (q.id === 'q8') { const followup = body.querySelector('.q8-outcome'); if (followup) followup.hidden = !Object.values(a.q8).includes('tested'); if (followup?.hidden) delete a.q8_outcome; } sync(); });
             return h('label', { class: `pill pill--${c.id}` }, input, h('span', {}, c.label));
           })),
       )),
