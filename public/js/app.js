@@ -183,7 +183,7 @@ function isAnswered(q, a = state.answers) {
   if (q.type === 'single') return Boolean(v) && (!q.options.find((o) => o.id === v)?.withText || Boolean(a[`${q.id}_other`]?.trim()));
   if (q.type === 'multi') return Array.isArray(v) && v.length > 0 && (!v.includes('other') || !q.options.find((o) => o.id === 'other')?.withText || Boolean(a[`${q.id}_other`]?.trim()));
   if (q.type === 'text') return typeof v === 'string' && v.trim().length >= (q.minLength || 1);
-  if (q.type === 'matrix') return q.rows.every((r) => v?.[r.id]);
+  if (q.type === 'matrix') return q.rows.every((r) => v?.[r.id]) && !(q.id === 'q8' && Object.values(v ?? {}).includes('tested') && !a.q8_outcome);
   return false;
 }
 
@@ -265,6 +265,32 @@ function renderQuestion() {
           })),
       )),
     );
+    if (q.id === 'q8') {
+      const testedSelected = () => Object.values(a.q8 ?? {}).includes('tested');
+      const outcomeOptions = [
+        { id: 'used', label: 'Люди действительно пришли, воспользовались проектом или его форматом' },
+        { id: 'returned', label: 'Люди вернулись, участвовали повторно или рекомендовали проект' },
+        { id: 'feedback', label: 'Получили конкретную обратную связь, которая помогла понять, что работает' },
+        { id: 'measured', label: 'Есть измеримый результат или данные (например, число участников, заявок, повторных обращений)' },
+        { id: 'unexpected', label: 'Результат оказался не таким, как ожидали; стало понятно, что нужно изменить' },
+        { id: 'not_recorded', label: 'Пока не зафиксировал(а), что именно произошло' },
+      ];
+      const followup = h('fieldset', { class: 'q8-outcome' },
+        h('legend', {}, 'Что произошло, когда вы проверили проект?'),
+        h('p', { class: 'hint' }, 'Вы отметили «Проверено на практике». Выберите наблюдаемый результат. Если пока нечего назвать, это тоже важный ответ.'),
+        h('div', { class: 'options' }, outcomeOptions.map((o) => {
+          const input = h('input', { type: 'radio', name: 'q8_outcome', value: o.id, checked: a.q8_outcome === o.id });
+          input.addEventListener('change', () => { a.q8_outcome = o.id; sync(); });
+          return h('label', { class: 'option' }, input, h('span', { class: 'option__box' }), h('span', { class: 'option__label' }, o.label));
+        })),
+      );
+      const updateFollowup = () => {
+        followup.hidden = !testedSelected();
+        if (!testedSelected()) delete a.q8_outcome;
+      };
+      body.append(followup);
+      updateFollowup();
+    }
   }
 
   const goNext = async () => {
