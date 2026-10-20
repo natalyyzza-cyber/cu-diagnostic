@@ -57,6 +57,36 @@ test('Q8: заявленные практические проверки без 
   assert.equal(scoreQ8(allYes, { q9: 'tested', q10: 'none', q12: 'none' }), 1);
 });
 
+test('Q8: неподтверждённая самооценка не считается практическим свидетельством', () => {
+  const raw = {
+    ...maximal,
+    q9: 'thinking',
+    q10: 'none',
+    q12: 'none',
+    q8: allYes,
+    q1: 'working',
+  };
+  const { answers } = normalizeAnswers(raw);
+  const r = buildResult({ answers, segment: 'private' });
+  assert.ok(r.contradictions.some(x => /проверено на практике/i.test(x)));
+  assert.equal(r.confidence.id, 'preliminary');
+});
+
+test('самокритичная оценка Q8 не обнуляет надёжность работающего проекта при наличии практических сигналов', () => {
+  const raw = {
+    ...maximal,
+    q8: allNo,
+    q9: 'regular',
+    q10: 'changed',
+    q12: 'demand',
+    q1: 'working',
+  };
+  const { answers } = normalizeAnswers(raw);
+  const r = buildResult({ answers, segment: 'private' });
+  assert.equal(r.scores.find(x => x.id === 'q8').score, 0);
+  assert.equal(r.confidence.id, 'high');
+});
+
 test('Q13: виды ресурсов, «нет ресурсов» исключает остальные', () => {
   assert.equal(scoreQ13(['none']), 0);
   assert.equal(scoreQ13(['venue']), 0);
