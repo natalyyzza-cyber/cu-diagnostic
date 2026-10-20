@@ -40,6 +40,17 @@ test('Q7: роль автора', () => {
   assert.equal(scoreQ7(['concept', 'partners', 'city', 'all_myself']), 1);
 });
 
+test('Q8: выбор «проверено на практике» требует назвать наблюдаемый результат', () => {
+  const raw = { ...minimal, q8: { ...allNo, audience: 'tested' } };
+  const missingOutcome = normalizeAnswers(raw);
+  assert.ok(missingOutcome.errors.includes('q8'), 'без уточнения нельзя отправить отмеченную практическую проверку');
+  const withOutcome = normalizeAnswers({ ...raw, q8_outcome: 'not_recorded' });
+  assert.deepEqual(withOutcome.errors, []);
+  assert.equal(withOutcome.answers.q8_outcome, 'not_recorded');
+  const noTested = normalizeAnswers({ ...minimal, q8_outcome: 'used' });
+  assert.deepEqual(noTested.errors, []);
+});
+
 test('Q8: отличает предположения, решения и практические проверки', () => {
   const valueOnly = { audience: 'assumption', value: 'assumption', participants: 'unknown', partners: 'unknown', resources: 'unknown', funding: 'not_needed', costs: 'not_needed', revenue: 'not_needed' };
   const balanced = { audience: 'defined', value: 'tested', participants: 'defined', partners: 'assumption', resources: 'defined', funding: 'unknown', costs: 'unknown', revenue: 'unknown' };
