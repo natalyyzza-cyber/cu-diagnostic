@@ -498,7 +498,10 @@ function detectContradictions(a) {
   if(a.q1==='working' && a.q9==='thinking') out.push('Проект назван работающим, но конкретных действий пока не было.');
   if(a.q6==='alone' && a.q14==='autonomous') out.push('Вы указали, что за проект отвечаете только вы, но проект может продолжать работу без вас.');
   if(a.q6==='team' && a.q14==='stops') out.push('У проекта есть команда, но без вас проект, по ответам, остановится.');
-  if(a.q3?.includes('unknown') && Object.values(a.q8??{}).filter(v=>v==='yes').length>=6) out.push('Аудитория пока не определена, но почти все элементы модели проекта названы понятными.');
+  const q8 = Object.values(a.q8 ?? {});
+  const detailedModelClaims = q8.filter(v => ['defined','tested'].includes(v)).length;
+  if(a.q3?.includes('unknown') && detailedModelClaims>=6) out.push('Аудитория отмечена как неопределённая, но в большинстве пунктов модели выбраны конкретные решения или практические подтверждения.');
+  if(q8.includes('tested') && !hasPracticalSignals(a)) out.push('В модели отмечены пункты «проверено на практике», но ответы о действиях, опыте и проверке востребованности пока не содержат практических сигналов.');
   if(a.q12==='demand' && a.q9==='thinking') out.push('Есть заявленный повторный спрос, но по вопросу о действиях проект ещё не запускался.');
   if(a.q12==='demand' && ['none','no_analysis'].includes(a.q10)) out.push('Заявленный спрос есть, но опыт проекта пока не анализировался.');
   return out;
@@ -518,16 +521,12 @@ function stageFitNotes(a,scores) {
 
 function confidenceLevel(a,contradictions) {
   if(contradictions.length>=2) return 'preliminary';
-  const evidence=Number(['tested','regular'].includes(a.q9))+
-    Number(['analyzed','changed'].includes(a.q10))+
-    Number(['research','data','demand'].includes(a.q12))+
-    Number(a.q5==='b')+
-    Number(['model','sources'].includes(a.q11));
+  // Надёжность оцениваем по разным практическим сигналам, а не по уверенности в самооценке.
   const realityEvidence=Number(['tested','regular'].includes(a.q9))+
     Number(['analyzed','changed'].includes(a.q10))+
     Number(['research','data','demand'].includes(a.q12));
-  if(evidence>=4 && realityEvidence>=2 && !contradictions.length) return 'high';
-  if(evidence>=2 && realityEvidence>=1 && contradictions.length<=1) return 'medium';
+  if(realityEvidence>=2 && !contradictions.length) return 'high';
+  if(realityEvidence>=1 && contradictions.length<=1) return 'medium';
   return 'preliminary';
 }
 
