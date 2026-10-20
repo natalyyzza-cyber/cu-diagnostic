@@ -252,7 +252,9 @@ function renderQuestion() {
     setTimeout(() => ta.focus(), 0);
   } else if (q.type === 'matrix') {
     a[q.id] = a[q.id] ?? {};
-    body = h('div', { class: 'matrix' },
+    // При смене схемы матрицы сбрасываем старые значения, чтобы незаметно не отправлять «Да / Нет» из сохранённого прогресса.
+    if (q.id === 'q8' && Object.values(a[q.id]).some(v => !q.columns.some(c => c.id === v))) a[q.id] = {};
+    body = h('div', { class: `matrix matrix--${q.id}` },
       q.rows.map((r) => h('div', { class: 'matrix__row' },
         h('span', { class: 'matrix__label' }, r.label),
         h('div', { class: 'matrix__choices' },
