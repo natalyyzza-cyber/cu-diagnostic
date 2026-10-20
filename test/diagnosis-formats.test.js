@@ -14,7 +14,7 @@ const exclusive = (q) => (q.options ?? []).filter((o) => o.exclusive).map((o) =>
 const sampleByType = {
   single: (q, i = 0) => q.options[i % q.options.length].id,
   multi: (q) => [choices(q)[0] ?? exclusive(q)[0]],
-  text: (q) => 'Проект помогает жителям района находить занятия рядом с домом.',
+  text: (q) => q.id === 'q16' ? 'Хотели проверить интерес к встречам, провели пробную встречу, пришли 8 человек.' : q.id === 'q17' ? 'Хочу повторить встречу, но пока не хватает организаторов.' : 'Проект помогает жителям района находить занятия рядом с домом.',
   matrix: (q, i = 0) => Object.fromEntries(q.rows.map((r, n) => [r.id, q.columns[(n + i) % q.columns.length].id])),
 };
 
