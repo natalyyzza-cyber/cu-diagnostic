@@ -92,9 +92,11 @@ export function scoreQ8(matrix = {}, answers = {}) {
   const denominator = applicable.reduce((sum, block) => sum + block.applicable, 0);
   const total = applicable.reduce((sum, block) => sum + block.average * block.applicable, 0);
   const raw = total / denominator;
-  // Самооценка не должна становиться «подтверждением» сама по себе.
-  // Учитываем проработанность, но максимум без практических сигналов ограничен.
-  return Number((hasPracticalSignals(answers) ? raw : Math.min(raw, 0.65)).toFixed(2));
+  // Балл остаётся в методической шкале 0 / 0.5 / 1, чтобы текстовые
+  // интерпретации не создавали ложную точность. Самооценка без практики
+  // не может дать максимальный уровень.
+  const calibrated = hasPracticalSignals(answers) ? raw : Math.min(raw, 0.65);
+  return calibrated < 0.35 ? 0 : calibrated < 0.8 ? 0.5 : 1;
 }
 
 export function scoreQ13(selected = []) {
