@@ -23,7 +23,7 @@ test('контрольный профиль 1: самоуверенный нов
   assert.equal(scoreQ8(answers.q8, answers), 0.5);
   assert.equal(result.bottleneck, 'q12');
   assert.equal(result.confidence.id, 'preliminary');
-  assert.equal(result.contradictions.length, 0, 'оптимизм сам по себе не должен автоматически считаться противоречием');
+  assert.ok(result.contradictions.length >= 1, 'противоречивые ответы о самостоятельности должны быть замечены');
 });
 
 test('контрольный профиль 2: самокритичный руководитель работающего проекта не обнуляет практические сигналы', () => {
