@@ -7,8 +7,8 @@ import {
   isUsableProblemText,
 } from '../src/scoring.js';
 
-const allYes = { audience: 'yes', value: 'yes', participants: 'yes', partners: 'yes', resources: 'yes', funding: 'yes', costs: 'yes', revenue: 'yes' };
-const allNo = Object.fromEntries(Object.keys(allYes).map((k) => [k, 'no']));
+const allYes = { audience: 'tested', value: 'tested', participants: 'tested', partners: 'tested', resources: 'tested', funding: 'tested', costs: 'tested', revenue: 'tested' };
+const allNo = Object.fromEntries(Object.keys(allYes).map((k) => [k, 'unknown']));
 
 const minimal = {
   q1: 'idea', q2: 'community', q3: ['kids'], q4: 'Помогаем подросткам находить сообщества по интересам в своём районе.',
@@ -40,14 +40,21 @@ test('Q7: роль автора', () => {
   assert.equal(scoreQ7(['concept', 'partners', 'city', 'all_myself']), 1);
 });
 
-test('Q8: покрывает три блока модели, а не только количество «Да»', () => {
-  const valueOnly = { audience: 'yes', value: 'yes', participants: 'no', partners: 'no', resources: 'no', funding: 'no', costs: 'no', revenue: 'no' };
-  const balanced = { audience: 'yes', value: 'yes', participants: 'yes', partners: 'yes', resources: 'yes', funding: 'no', costs: 'no', revenue: 'no' };
-  assert.equal(scoreQ8(valueOnly), 0);
-  assert.equal(scoreQ8(balanced), 0.5);
-  assert.equal(scoreQ8(allYes), 1);
+test('Q8: отличает предположения, решения и практические проверки', () => {
+  const valueOnly = { audience: 'assumption', value: 'assumption', participants: 'unknown', partners: 'unknown', resources: 'unknown', funding: 'not_needed', costs: 'not_needed', revenue: 'not_needed' };
+  const balanced = { audience: 'defined', value: 'tested', participants: 'defined', partners: 'assumption', resources: 'defined', funding: 'unknown', costs: 'unknown', revenue: 'unknown' };
+  assert.ok(scoreQ8(valueOnly) > 0);
+  assert.ok(scoreQ8(valueOnly) < 0.65);
+  assert.ok(scoreQ8(allYes) <= 0.65, 'самооценка без практических сигналов ограничена');
+  assert.equal(scoreQ8(allYes, { q9: 'regular', q10: 'changed', q12: 'demand' }), 1);
   assert.equal(modelCoverage(balanced).value.complete, true);
-  assert.equal(modelCoverage(balanced).sustainability.yes, 0);
+  assert.equal(modelCoverage(balanced).sustainability.applicable, 3);
+  assert.equal(modelCoverage(valueOnly).sustainability.applicable, 0);
+});
+
+test('Q8: заявленные практические проверки без других сигналов не получают максимальную оценку', () => {
+  assert.equal(scoreQ8(allYes, { q9: 'thinking', q10: 'none', q12: 'none' }), 0.65);
+  assert.equal(scoreQ8(allYes, { q9: 'tested', q10: 'none', q12: 'none' }), 1);
 });
 
 test('Q13: виды ресурсов, «нет ресурсов» исключает остальные', () => {
