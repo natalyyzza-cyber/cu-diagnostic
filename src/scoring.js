@@ -38,6 +38,14 @@ export function normalizeAnswers(raw = {}) {
       if (!ok) errors.push(q.id); else answers[q.id] = out;
     }
   }
+  const q8HasTested = Object.values(answers.q8 ?? {}).includes('tested');
+  if (q8HasTested) {
+    const validOutcomes = ['used', 'returned', 'feedback', 'measured', 'unexpected', 'not_recorded'];
+    if (!validOutcomes.includes(raw.q8_outcome)) errors.push('q8');
+    else answers.q8_outcome = raw.q8_outcome;
+  } else if (raw.q8_outcome && ['used', 'returned', 'feedback', 'measured', 'unexpected', 'not_recorded'].includes(raw.q8_outcome)) {
+    answers.q8_outcome = raw.q8_outcome;
+  }
   return { answers, errors };
 }
 
