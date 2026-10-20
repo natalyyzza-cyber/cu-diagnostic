@@ -43,8 +43,9 @@ test('Q7: роль автора', () => {
 test('Q8: отличает предположения, решения и практические проверки', () => {
   const valueOnly = { audience: 'assumption', value: 'assumption', participants: 'unknown', partners: 'unknown', resources: 'unknown', funding: 'not_needed', costs: 'not_needed', revenue: 'not_needed' };
   const balanced = { audience: 'defined', value: 'tested', participants: 'defined', partners: 'assumption', resources: 'defined', funding: 'unknown', costs: 'unknown', revenue: 'unknown' };
-  assert.ok(scoreQ8(valueOnly) > 0);
-  assert.ok(scoreQ8(valueOnly) < 0.65);
+  assert.ok(scoreQ8(valueOnly) <= 0.5);
+  const definedOnly = Object.fromEntries(Object.keys(allYes).map(k => [k, 'defined']));
+  assert.equal(scoreQ8(definedOnly), 0.5);
   assert.ok(scoreQ8(allYes) <= 0.65, 'самооценка без практических сигналов ограничена');
   assert.equal(scoreQ8(allYes, { q9: 'regular', q10: 'changed', q12: 'demand' }), 1);
   assert.equal(modelCoverage(balanced).value.complete, true);
