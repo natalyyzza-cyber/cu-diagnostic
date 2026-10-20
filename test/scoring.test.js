@@ -18,7 +18,7 @@ const minimal = {
 const maximal = {
   q1: 'working', q2: 'place', q3: ['residents', 'families'], q4: 'Создаём соседский центр, где жители района сами организуют досуг.',
   q5: 'b', q6: 'team', q7: ['concept', 'team', 'resources', 'analysis'], q8: allYes, q9: 'regular', q10: 'changed',
-  q11: 'sources', q12: 'demand', q13: ['audience', 'venue', 'partners', 'experts', 'funding'], q14: 'autonomous', q15: 'scaling',
+  q11: 'sources', q12: 'demand', q13: ['audience', 'venue', 'partners', 'experts', 'funding'], q14: 'autonomous', q15: 'scaling', q8_outcome: 'used',
 };
 
 test('максимальная сумма баллов — 17', () => {
