@@ -7,7 +7,7 @@ const base = {
   q4:'Проект помогает жителям регулярно участвовать в локальных событиях.',
   q5:'b', q6:'helpers',
   q7:['concept','audience','partners','resources'],
-  q8:{audience:'yes',value:'yes',participants:'yes',partners:'yes',resources:'yes',funding:'yes',costs:'no',revenue:'no'},
+  q8:{audience:'defined',value:'defined',participants:'defined',partners:'defined',resources:'defined',funding:'defined',costs:'unknown',revenue:'unknown'},
   q9:'tested', q10:'analyzed', q11:'who', q12:'data',
   q13:['audience','venue','partners'], q14:'partly', q15:'unknown'
 };
