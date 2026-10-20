@@ -350,10 +350,10 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
 
   const confirmed = Array.isArray(d.confirmed) ? d.confirmed.slice(0, 3) : [];
   const diagnosisChain = h('section', { class: 'card block diagnosis-chain' },
-    h('h2', { class: 'block__title' }, 'Что уже известно о проекте'),
+    h('h2', { class: 'block__title' }, 'Что показывают ваши ответы'),
     confirmed.length
       ? h('div', { class: 'diagnosis-part' },
-          h('h3', {}, 'На что уже можно опираться'),
+          h('h3', {}, 'Какие опоры вы указали'),
           h('ul', { class: 'items diagnosis-confirmed' },
             confirmed.map(x => h('li', { class: 'item' }, h('p', {}, x)))))
       : null,
