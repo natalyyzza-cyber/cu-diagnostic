@@ -50,26 +50,51 @@ export function scoreQ7(selected = []) {
   return 1;
 }
 
-export function modelCoverage(matrix = {}) {
+const Q8_LEVEL = { unknown:0, assumption:0.25, defined:0.65, tested:1, not_needed:null };
+
+function hasPracticalSignals(answers = {}) {
+  return ['tested','regular'].includes(answers.q9) ||
+    ['feedback','analyzed','changed'].includes(answers.q10) ||
+    ['research','data','demand'].includes(answers.q12);
+}
+
+export function modelCoverage(matrix = {}, answers = {}) {
   const groups = {
     value: ['audience','value'],
     delivery: ['participants','partners','resources'],
     sustainability: ['funding','costs','revenue'],
   };
+  const corroborated = hasPracticalSignals(answers);
   return Object.fromEntries(Object.entries(groups).map(([id, rows]) => {
-    const yes = rows.filter(row => matrix?.[row] === 'yes');
-    return [id, { id, yes: yes.length, total: rows.length, complete: yes.length === rows.length, missing: rows.filter(row => matrix?.[row] !== 'yes') }];
+    const applicable = rows.filter(row => matrix?.[row] !== 'not_needed');
+    const levelFor = row => matrix?.[row] === 'tested' && !corroborated ? 'defined' : (matrix?.[row] || 'unknown');
+    const values = applicable.map(row => Q8_LEVEL[levelFor(row)] ?? 0);
+    const average = values.length ? values.reduce((sum, x) => sum + x, 0) / values.length : null;
+    return [id, {
+      id,
+      yes: applicable.filter(row => ['defined','tested'].includes(levelFor(row))).length,
+      total: rows.length,
+      applicable: applicable.length,
+      complete: applicable.length > 0 && applicable.every(row => ['defined','tested'].includes(levelFor(row))),
+      missing: applicable.filter(row => ['unknown','assumption'].includes(levelFor(row))),
+      average,
+      tested: applicable.filter(row => levelFor(row) === 'tested').length,
+      assumptions: applicable.filter(row => levelFor(row) === 'assumption').length,
+      notNeeded: rows.filter(row => matrix?.[row] === 'not_needed').length,
+    }];
   }));
 }
 
-export function scoreQ8(matrix = {}) {
-  const coverage = modelCoverage(matrix);
-  const blocks = Object.values(coverage).filter(Boolean);
-  const domains = blocks.filter(x => x.yes > 0).length;
-  const yes = blocks.reduce((sum, x) => sum + x.yes, 0);
-  if (domains === 3 && yes >= 6) return 1;
-  if (domains >= 2 && yes >= 3) return 0.5;
-  return 0;
+export function scoreQ8(matrix = {}, answers = {}) {
+  const coverage = modelCoverage(matrix, answers);
+  const applicable = Object.values(coverage).filter(block => block.applicable > 0);
+  if (!applicable.length) return 0;
+  const denominator = applicable.reduce((sum, block) => sum + block.applicable, 0);
+  const total = applicable.reduce((sum, block) => sum + block.average * block.applicable, 0);
+  const raw = total / denominator;
+  // Самооценка не должна становиться «подтверждением» сама по себе.
+  // Учитываем проработанность, но максимум без практических сигналов ограничен.
+  return Number((hasPracticalSignals(answers) ? raw : Math.min(raw, 0.65)).toFixed(2));
 }
 
 export function scoreQ13(selected = []) {
@@ -82,7 +107,7 @@ export function computeScores(answers) {
   for (const id of SCORED_IDS) {
     const q = getQuestion(id);
     scores[id] = id === 'q7' ? scoreQ7(answers.q7) :
-      id === 'q8' ? scoreQ8(answers.q8) :
+      id === 'q8' ? scoreQ8(answers.q8, answers) :
       id === 'q13' ? scoreQ13(answers.q13) :
       q.options.find(o => o.id === answers[id])?.score ?? 0;
   }
@@ -175,7 +200,7 @@ function bottleneckEvidencePenalty(id, answers) {
   if (id==='q9') return ['tested','regular'].includes(answers.q9) ? 0 : answers.q9==='started' ? 0.25 : 0.5;
   if (id==='q10') return ['analyzed','changed'].includes(answers.q10) ? 0 : answers.q10==='feedback' ? 0.25 : 0.5;
   if (id==='q5') return answers.q5==='b' ? 0 : 0.45;
-  if (id==='q8') return 0;
+  if (id==='q8') return hasPracticalSignals(answers) ? 0.05 : 0.3;
   if (id==='q11') return answers.q11==='sources' ? 0 : answers.q11==='model' ? 0.15 : answers.q11==='who' ? 0.3 : 0.5;
   if (id==='q13') return (answers.q13??[]).includes('none') ? 0.5 : 0;
   if (id==='q6') return ['gathering','team'].includes(answers.q6) ? 0 : 0.35;
@@ -232,7 +257,7 @@ export function resourceGaps(answers,stage,formatId) {
 }
 
 export function modelGaps(answers) {
-  return Object.values(modelCoverage(answers.q8)).filter(Boolean).filter(x=>x.yes===0).map(x=>x.id);
+  return Object.values(modelCoverage(answers.q8, answers)).filter(x=>x.applicable>0 && x.missing.length>0).map(x=>x.id);
 }
 
 export function pickResourceFocus(answers,stage,formatId) {
@@ -529,7 +554,7 @@ export function buildResult({answers,segment}) {
   const growthZones=pickGrowthZones(scores,stage,need);
   const {focus,bottleneck,requested,needMatched}=pickFocus(growthZones,need,answers,scores,stage);
   const seg=SEGMENTS.find(s=>s.id===segment);
-  const coverage=modelCoverage(answers.q8);
+  const coverage=modelCoverage(answers.q8, answers);
   const resourceGap=pickResourceFocus(answers,stage,answers.q2);
   const gaps=modelGaps(answers);
   const bottleneckLabel=bottleneck?INDICATORS[bottleneck].growthTitle:null;
