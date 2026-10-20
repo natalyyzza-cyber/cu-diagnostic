@@ -52,10 +52,15 @@ export function scoreQ7(selected = []) {
 
 const Q8_LEVEL = { unknown:0, assumption:0.25, defined:0.65, tested:1, not_needed:null };
 
+function practicalSignalCount(answers = {}) {
+  return Number(['tested','regular'].includes(answers.q9)) +
+    Number(['feedback','analyzed','changed'].includes(answers.q10)) +
+    Number(['research','data','demand'].includes(answers.q12));
+}
+
 function hasPracticalSignals(answers = {}) {
-  return ['tested','regular'].includes(answers.q9) ||
-    ['feedback','analyzed','changed'].includes(answers.q10) ||
-    ['research','data','demand'].includes(answers.q12);
+  // Один самоотчёт о запуске ещё не подтверждает модель: нужен второй тип сигнала.
+  return practicalSignalCount(answers) >= 2;
 }
 
 export function modelCoverage(matrix = {}, answers = {}) {
@@ -503,7 +508,7 @@ function detectContradictions(a) {
   const q8 = Object.values(a.q8 ?? {});
   const detailedModelClaims = q8.filter(v => ['defined','tested'].includes(v)).length;
   if(a.q3?.includes('unknown') && detailedModelClaims>=6) out.push('Аудитория отмечена как неопределённая, но в большинстве пунктов модели выбраны конкретные решения или практические подтверждения.');
-  if(q8.includes('tested') && !hasPracticalSignals(a)) out.push('В модели отмечены пункты «проверено на практике», но ответы о действиях, опыте и проверке востребованности пока не содержат практических сигналов.');
+  if(q8.includes('tested') && !hasPracticalSignals(a)) out.push('В модели отмечены пункты «проверено на практике», но нет второго независимого сигнала — анализа опыта или данных о реакции аудитории. Поэтому практическая проверка пока не подтверждена другими ответами.');
   if(a.q12==='demand' && a.q9==='thinking') out.push('Есть заявленный повторный спрос, но по вопросу о действиях проект ещё не запускался.');
   if(a.q12==='demand' && ['none','no_analysis'].includes(a.q10)) out.push('Заявленный спрос есть, но опыт проекта пока не анализировался.');
   return out;
