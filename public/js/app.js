@@ -410,7 +410,8 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
 
   const test = h('section', { class: 'card block block--accent result-test' },
     h('p', { class: 'eyebrow' }, 'Рекомендуемый следующий шаг'),
-    h('h2', { class: 'block__title' }, 'Проверьте это на практике'),
+    h('h2', { class: 'block__title' }, 'Что сделать сейчас'),
+    h('p', { class: 'muted' }, 'Одно конкретное действие, которое поможет продвинуть проект и получить данные для решения.'),
     h('p', { class: 'next-step', 'data-text': 'next' }, d.nextTest || r.nextStep),
     h('div', { class: 'decision' },
       h('h3', {}, 'Как принять решение по результату'),
