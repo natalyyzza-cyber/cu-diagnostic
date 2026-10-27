@@ -512,7 +512,7 @@ function detectContradictions(a) {
   if(a.q1==='idea' && ['tested','regular'].includes(a.q9)) out.push('Стадия проекта и описание уже сделанных действий не совпадают.');
   if(a.q1==='working' && a.q9==='thinking') out.push('Проект назван работающим, но конкретных действий пока не было.');
   if(a.q6==='alone' && a.q14==='autonomous') out.push('Вы указали, что за проект отвечаете только вы, но проект может продолжать работу без вас.');
-  if(a.q6==='team' && a.q14==='stops') out.push('У проекта есть команда, но без вас проект, по ответам, остановится.');
+  if(a.q6==='team' && a.q14==='stops') out.push('У проекта есть команда, но ключевая работа, вероятно, по-прежнему зависит от вашего личного участия.');
   const q8 = Object.values(a.q8 ?? {});
   const detailedModelClaims = q8.filter(v => ['defined','tested'].includes(v)).length;
   if(a.q3?.includes('unknown') && detailedModelClaims>=6) out.push('Аудитория отмечена как неопределённая, но в большинстве пунктов модели выбраны конкретные решения или практические подтверждения.');
