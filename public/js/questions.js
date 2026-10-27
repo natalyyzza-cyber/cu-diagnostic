@@ -33,7 +33,7 @@ export const QUESTIONS = [
     hint: 'Выберите 1 вариант ответа',
     options: [
       { id: 'idea', label: 'Пока только идея' },
-      { id: 'first_steps', label: 'Начал(а) первые шаги' },
+      { id: 'first_steps', label: 'Первые шаги' },
       { id: 'pilot', label: 'Провёл(а) первый пилот / мероприятие / тест' },
       { id: 'working', label: 'Проект уже работает, хочу развивать или масштабировать' },
     ],
