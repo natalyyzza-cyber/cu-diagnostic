@@ -378,10 +378,10 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
 
   const confirmed = Array.isArray(d.confirmed) ? d.confirmed.slice(0, 3) : [];
   const diagnosisChain = h('section', { class: 'card block diagnosis-chain' },
-    h('h2', { class: 'block__title' }, 'Что показывают ваши ответы'),
+    h('h2', { class: 'block__title' }, 'Диагностика проекта'),
     confirmed.length
       ? h('div', { class: 'diagnosis-part' },
-          h('h3', {}, 'Какие опоры вы указали'),
+          h('h3', {}, 'На что уже может опираться проект'),
           h('ul', { class: 'items diagnosis-confirmed' },
             confirmed.map(x => h('li', { class: 'item' }, h('p', {}, x)))))
       : null,
@@ -398,7 +398,7 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
     const flags = [];
     if (r.contradictions?.length) flags.push(...r.contradictions.map(x => 'В ответах есть расхождение: ' + x));
     if (r.subjectiveMismatch) {
-      flags.push(`Вы указали запрос «${r.subjectiveMismatch.need}». По ответам сначала стоит решить задачу «${r.subjectiveMismatch.focus.toLowerCase()}» — после этого к вашему запросу будет проще вернуться с большей опорой.`);
+      flags.push(`Сейчас важнее сначала решить задачу «${r.subjectiveMismatch.focus.toLowerCase()}». После этого к вопросу «${r.subjectiveMismatch.need}» можно будет вернуться с более прочной основой.`);
     }
     if (r.confidence?.id !== 'high' && d.confidenceNote) flags.push(d.confidenceNote);
     return flags.length
