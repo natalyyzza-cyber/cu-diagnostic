@@ -154,7 +154,7 @@ function describeAnswers(record) {
     ...r.scores.map((s) => `- ${s.id} ${s.name}: ${s.score}/${s.max}`),
     '',
     'Ответы участника по показателям:',
-    ...describeScoredAnswers(a),
+    ...describeScoredAnswers(a, r),
     '',
     'Выбранные сильные стороны (id — заголовок — базовая трактовка):',
     ...(r.strengths.length
@@ -181,7 +181,7 @@ function describeAnswers(record) {
   return lines.join('\n');
 }
 
-function describeScoredAnswers(a) {
+function describeScoredAnswers(a, result) {
   // Короткие подписи ответов, чтобы модель опиралась на факты, а не только на баллы.
   const pick = (map, id) => map[id] ?? id;
   const out = [];
@@ -189,7 +189,7 @@ function describeScoredAnswers(a) {
   out.push(`- Функции автора: ${(a.q7 ?? []).join(', ')}`);
   const q8Labels = { unknown: 'пока не определено', assumption: 'есть предположение', defined: 'есть конкретное решение / договорённость', tested: 'заявлено как проверенное на практике', not_needed: 'не требуется на текущем этапе' };
   const q8 = Object.entries(a.q8 ?? {}).map(([k, v]) => `${k}: ${q8Labels[v] || v}`);
-  const coverage = Object.values(record.result.modelCoverage || {}).map(block => `${block.id}: среднее состояние ${block.average === null ? 'не применимо' : block.average.toFixed(2)}, неясных пунктов ${block.missing.length}, заявлено практических проверок ${block.tested}`);
+  const coverage = Object.values(result.modelCoverage || {}).map(block => `${block.id}: среднее состояние ${block.average === null ? 'не применимо' : block.average.toFixed(2)}, неясных пунктов ${block.missing.length}, заявлено практических проверок ${block.tested}`);
   out.push(`- Состояние элементов модели (по самооценке участника): ${q8.join('; ') || '—'}`);
   const q8OutcomeLabels = { used: 'люди пришли / воспользовались форматом', returned: 'люди вернулись / рекомендовали', feedback: 'получена конкретная обратная связь', measured: 'есть измеримый результат / данные', unexpected: 'результат отличался от ожиданий, стало ясно что менять', not_recorded: 'результат пока не зафиксирован' };
   if (a.q8_outcome) out.push(`- Наблюдаемый результат проверки Q8 (со слов участника, не независимая проверка): ${q8OutcomeLabels[a.q8_outcome] || a.q8_outcome}`);
@@ -199,7 +199,7 @@ function describeScoredAnswers(a) {
   out.push(`- Ресурсная модель: ${pick({ unknown: 'пока не понимает модель ресурсов и поддержки', who: 'понимает потребность в ресурсах, но модель поддержки не определена', model: 'понимает источники поддержки, затраты и критические ресурсы', sources: 'видит несколько источников поддержки и понимает, как проект может продолжать работу' }, a.q11)}`);
   out.push(`- Проверка востребованности: ${pick({ none: 'не проверял', talks: 'обсуждает со знакомыми', research: 'интервью / опросы / наблюдения', data: 'использует данные для изменений', demand: 'есть регулярный / повторный спрос' }, a.q12)}`);
   out.push(`- Уже есть ресурсы: ${(a.q13 ?? []).join(', ')}`);
-  out.push(`- Блоки модели: ${JSON.stringify(record.result.modelCoverage ?? {})}`);
+  out.push(`- Блоки модели: ${JSON.stringify(result.modelCoverage ?? {})}`);
   out.push(`- Без автора: ${pick({ stops: 'проект остановится', partly: 'часть работы продолжат', directions: 'отдельные направления продолжат', autonomous: 'проект продолжит работу' }, a.q14)}`);
   return out;
 }
