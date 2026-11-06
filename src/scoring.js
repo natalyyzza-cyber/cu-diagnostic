@@ -511,7 +511,7 @@ function detectContradictions(a) {
   const out=[];
   if(a.q1==='idea' && ['tested','regular'].includes(a.q9)) out.push('Стадия проекта и описание уже сделанных действий не совпадают.');
   if(a.q1==='working' && a.q9==='thinking') out.push('Проект назван работающим, но конкретных действий пока не было.');
-  if(a.q6==='alone' && a.q14==='autonomous') out.push('Вы указали, что за проект отвечаете только вы, но проект может продолжать работу без вас.');
+  if(a.q6==='alone' && a.q14==='autonomous') out.push('Есть расхождение: все функции проекта сосредоточены у вас, но при этом предполагается, что работа сможет продолжаться без вашего участия.');
   if(a.q6==='team' && a.q14==='stops') out.push('У проекта есть команда, но ключевая работа, вероятно, по-прежнему зависит от вашего личного участия.');
   const q8 = Object.values(a.q8 ?? {});
   const detailedModelClaims = q8.filter(v => ['defined','tested'].includes(v)).length;
@@ -554,7 +554,7 @@ function subjectiveMismatch(need,focus) {
   return {
     need:optionLabel('q15',need),
     focus:INDICATORS[focus].growthTitle,
-    text:`Вы указали запрос «${optionLabel('q15',need)}». По ответам сначала стоит решить задачу «${INDICATORS[focus].growthTitle.toLowerCase()}» — после этого к вашему запросу будет проще вернуться с большей опорой.`,
+    text:`Ваш запрос — «${optionLabel('q15',need)}». Сейчас приоритетнее решить задачу «${INDICATORS[focus].growthTitle.toLowerCase()}»; после этого к вашему запросу можно будет вернуться с более прочной основой.`,
   };
 }
 
