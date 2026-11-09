@@ -494,11 +494,17 @@ function buildDiagnosis({answers,stage,format,audience,bottleneck,confidence,sta
     headline:template.headline,
     summary,
     confirmed:buildConfirmed({answers,format,audience}),
-    openQuestion:template.openQuestion,
-    whyNow:template.whyNow,
+    openQuestion:operational.active && id === 'q6'
+      ? 'Какое расписание жители готовы поддерживать и кто возьмёт на себя каждую повторяющуюся задачу? Что мешает прежним посетителям возвращаться?'
+      : template.openQuestion,
+    whyNow:operational.active && id === 'q6'
+      ? 'Разовые мероприятия зависят от усилий инициатора и не создают понятного повода возвращаться. Расписание и распределённые обязанности помогут проверить, может ли пространство работать регулярно, а разговор с прежними посетителями — понять, что влияет на посещаемость.'
+      : template.whyNow,
     nextTest:operationalNextTest || template.nextTest({answers,stage,format,audience}),
     decisionAfterTest:operationalDecision,
-    outcome:DIAGNOSIS_OUTCOMES[id] || DIAGNOSIS_OUTCOMES.none,
+    outcome:operational.active && id === 'q6'
+      ? 'Станет понятно, может ли пространство работать по повторяемому расписанию силами жителей и какие изменения нужны, чтобы участники возвращались.'
+      : (DIAGNOSIS_OUTCOMES[id] || DIAGNOSIS_OUTCOMES.none),
     confidenceNote,
     stageContext:(stage==='idea' && stageFit?.[0]) ? stageFit[0] : null,
   };
@@ -605,6 +611,15 @@ export function buildResult({answers,segment}) {
   const resourceGap=pickResourceFocus(answers,stage,answers.q2);
   const gaps=modelGaps(answers);
   const bottleneckLabel=bottleneck?INDICATORS[bottleneck].growthTitle:null;
+  const operationalContinuity=detectOperationalContinuity(answers);
+  const roadmap=buildRoadmap({growthZones,focus,need,stage});
+  if (operationalContinuity.active && bottleneck === 'q6' && roadmap.length) {
+    roadmap[0]={
+      title:'Организовать регулярную работу пространства',
+      text:'Составить расписание ближайших встреч, распределить обязанности между жителями и выяснить у прежних посетителей, что мешает им возвращаться.',
+      indicator:'q6',
+    };
+  }
   return {
     total,max:MAX_SCORE,resultStage:resultStage(total),
     stage:{id:stage,label:optionLabel('q1',stage)},
@@ -621,9 +636,9 @@ export function buildResult({answers,segment}) {
     modelCoverage:coverage,
     modelGaps:gaps,
     resourceGap,
-    operationalContinuity:detectOperationalContinuity(answers),
+    operationalContinuity,
     confidence:{id:confidence,label:confidenceLabel(confidence)},
-    contradictions,stageFit,subjectiveMismatch:subjectiveMismatch(need,focus),
+    contradictions,stageFit,subjectiveMismatch:needMatched?null:subjectiveMismatch(need,focus),
     diagnosis:buildDiagnosis({
       answers,stage,format:answers.q2==='other'?(answers.q2_other||'Другое'):optionLabel('q2',answers.q2),
       audience:(answers.q3??[]).filter(id=>id!=='unknown').map(id=>id==='other'?(answers.q3_other||''):optionLabel('q3',id).toLowerCase()).filter(Boolean).join(', '),
@@ -631,7 +646,7 @@ export function buildResult({answers,segment}) {
     }),
     potential:buildPotential({strengths,growthZones,stage,stageFit,confidence,bottleneckLabel}),
     nextStep:buildNextStep({focus,needMatched,need,stage}),
-    roadmap:buildRoadmap({growthZones,focus,need,stage}),
+    roadmap,
     personalized:false,
   };
 }
