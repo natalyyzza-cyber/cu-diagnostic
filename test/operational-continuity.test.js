@@ -33,6 +33,7 @@ test('операционные препятствия в описании про
   assert.equal(result.bottleneck,'q6');
   assert.equal(result.focus,'q6');
   assert.equal(result.needMatched,true);
+  assert.equal(result.subjectiveMismatch,null);
   assert.match(result.diagnosis.summary,/регулярн/iu);
   assert.match(result.diagnosis.nextTest,/расписан/iu);
   assert.match(result.diagnosis.nextTest,/обязанност/iu);
