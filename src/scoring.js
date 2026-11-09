@@ -488,7 +488,7 @@ function buildDiagnosis({answers,stage,format,audience,bottleneck,confidence,sta
   const confidenceNote=confidence==='preliminary'
     ? 'Этот вывод в значительной степени основан на самооценке. Следующий практический тест нужен, чтобы проверить его фактами.'
     : confidence==='medium'
-      ? 'В ответах уже есть практические сигналы, но следующий тест поможет сделать вывод надёжнее.'
+      ? 'Есть практические сигналы, но следующий тест поможет сделать вывод надёжнее.'
       : 'Вывод опирается на несколько независимых практических сигналов.';
   return {
     headline:template.headline,
