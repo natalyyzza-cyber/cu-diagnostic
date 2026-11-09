@@ -223,7 +223,27 @@ function bottleneckEvidencePenalty(id, answers) {
   return 0;
 }
 
+// Распознаём операционные препятствия в открытых описаниях. Это не новая оценка
+// проекта: сигналы используются только для выбора более точного ближайшего ограничения.
+export function detectOperationalContinuity(answers = {}) {
+  const text = [answers.q4, answers.q16, answers.q17].filter(Boolean).join(' ').toLowerCase();
+  const signals = {
+    schedule: /расписан|регулярн|постоянн|разов(?:ые|ых|ый)|нерегулярн/.test(text),
+    responsibility: /обязанност|ответствен|распредел(?:ить|ения|ение)|всё держится|держится на мне/.test(text),
+    attendance: /посещаем|посещаемость|приход(?:ят|или|ить)|возвращ(?:ают|аться)|перестал(?:и)? приходить|снижа(?:ется|лась) посещаемост|меньше людей/.test(text),
+  };
+  const count = Object.values(signals).filter(Boolean).length;
+  const relevantFormat = ['place','community','event','culture','education'].includes(answers.q2);
+  const relevantStage = ['first_steps','pilot','working'].includes(answers.q1);
+  return { ...signals, active: relevantFormat && relevantStage && count >= 2 };
+}
+
 export function selectBottleneck(scores,answers,stage) {
+  const operational = detectOperationalContinuity(answers);
+  // Если уже были запуски, но нет расписания и закреплённых обязанностей,
+  // сначала нужно собрать повторяемую работу, а не анализировать гипотезы.
+  if (operational.active && operational.schedule && operational.responsibility &&
+      scores.q6 < getQuestion('q6').max) return 'q6';
   const ids=STAGE_BOTTLENECKS[stage]??SCORED_IDS;
   const candidates=ids.filter(id=>scores[id]<getQuestion(id).max);
   if (!candidates.length) return null;
@@ -242,10 +262,12 @@ export function selectBottleneck(scores,answers,stage) {
 
 export function pickFocus(growthZones,need,answers,scores,stage) {
   const bottleneck=selectBottleneck(scores,answers,stage);
+  const operational = detectOperationalContinuity(answers);
   const ids=NEED_TO_INDICATORS[need]??[];
   const requested=ids.find(id=>growthZones.includes(id)) ?? null;
   const focus=bottleneck ?? requested ?? growthZones[0] ?? null;
-  return {focus, bottleneck, requested, needMatched:Boolean(requested&&requested===focus)};
+  const operationalNeedMatches = operational.active && need === 'audience_needs' && focus === 'q6';
+  return {focus, bottleneck, requested, needMatched:Boolean((requested&&requested===focus)||operationalNeedMatches)};
 }
 
 function expectedResources(format,stage) {
@@ -428,10 +450,12 @@ const DIAGNOSIS_OUTCOMES = {
 
 function buildConfirmed({answers,format,audience}) {
   const items=[];
-  if (['tested','regular'].includes(answers.q9)) items.push('Проект уже проходил практическую проверку или работает регулярно. При этом результаты опыта пока не подтверждены независимыми данными.');
+  if (['tested','regular'].includes(answers.q9)) items.push('Проект уже проходил практическую проверку или работает регулярно. Масштаб и повторяемость результатов ещё важно уточнить.');
   else if (answers.q9==='started') items.push('Первые действия уже начались: были встречи, мероприятия или договорённости.');
-  if (['feedback','analyzed','changed'].includes(answers.q10)) items.push('Практический опыт сопровождается обратной связью или анализом. Следующий вопрос — какие конкретные решения были приняты на этой основе.');
-  if (['research','data','demand'].includes(answers.q12)) items.push('Есть предварительные сигналы со стороны аудитории — результаты исследования, данные или реальные действия. Их значимость зависит от характера наблюдений и масштаба выборки.');
+  if (['feedback','analyzed','changed'].includes(answers.q10)) items.push('Практический опыт сопровождается обратной связью или анализом; следующий вопрос — какие решения уже приняты на этой основе.');
+  if (['research','data','demand'].includes(answers.q12)) items.push('Есть предварительные сигналы со стороны аудитории — результаты исследования, данные или реальные действия. Их значение зависит от характера наблюдений и масштаба выборки.');
+  const operational = detectOperationalContinuity(answers);
+  if (operational.active && items.length < 3) items.push('В описании проекта обозначены трудности с регулярностью работы, посещаемостью или распределением обязанностей. Это важный контекст для следующего этапа.');
   if (['model','sources'].includes(answers.q11)) items.push('Определены возможные источники поддержки и ресурсы проекта; наличие договорённостей и фактическая доступность этих ресурсов требуют отдельной проверки.');
   if (!items.length) {
     items.push('Формат проекта пока обозначен как рабочая модель; его соответствие текущей практике ещё предстоит подтвердить.');
@@ -451,7 +475,16 @@ function buildDiagnosis({answers,stage,format,audience,bottleneck,confidence,sta
     nextTest:() => NEXT_STEPS.none[stageGroup(stage)],
     decision:'Используйте результат действия, чтобы решить, что закрепить, изменить или проверить дальше.'
   };
-  const summary=template.summary({answers,stage,format,audience});
+  const operational = detectOperationalContinuity(answers);
+  const summary = operational.active && id === 'q6'
+    ? 'Первые мероприятия уже состоялись, но пространство пока не перешло к регулярной работе: нет постоянного расписания и закреплённых обязанностей. Поэтому сейчас важно организовать повторяемую работу и одновременно понять, что поможет жителям возвращаться.'
+    : template.summary({answers,stage,format,audience});
+  const operationalNextTest = operational.active && id === 'q6'
+    ? 'Составьте расписание ближайших встреч или часов работы пространства. Вместе с жителями распределите конкретные обязанности: кто отвечает за открытие и подготовку места, программу, приглашение участников и связь после встречи. Отдельно поговорите с теми, кто раньше приходил, но перестал, и зафиксируйте причины. Так вы проверите, можно ли поддерживать регулярную работу силами нескольких жителей и что мешает людям возвращаться.'
+    : null;
+  const operationalDecision = operational.active && id === 'q6'
+    ? 'Если расписание удаётся выполнять без того, чтобы все задачи оставались на вас, закрепите роли и повторяйте подходящий формат. Если обязанности не берут или люди не возвращаются, уточните объём задач и причины отказа от участия, затем измените расписание или программу.'
+    : template.decision;
   const confidenceNote=confidence==='preliminary'
     ? 'Этот вывод в значительной степени основан на самооценке. Следующий практический тест нужен, чтобы проверить его фактами.'
     : confidence==='medium'
@@ -463,8 +496,8 @@ function buildDiagnosis({answers,stage,format,audience,bottleneck,confidence,sta
     confirmed:buildConfirmed({answers,format,audience}),
     openQuestion:template.openQuestion,
     whyNow:template.whyNow,
-    nextTest:template.nextTest({answers,stage,format,audience}),
-    decisionAfterTest:template.decision,
+    nextTest:operationalNextTest || template.nextTest({answers,stage,format,audience}),
+    decisionAfterTest:operationalDecision,
     outcome:DIAGNOSIS_OUTCOMES[id] || DIAGNOSIS_OUTCOMES.none,
     confidenceNote,
     stageContext:(stage==='idea' && stageFit?.[0]) ? stageFit[0] : null,
@@ -588,6 +621,7 @@ export function buildResult({answers,segment}) {
     modelCoverage:coverage,
     modelGaps:gaps,
     resourceGap,
+    operationalContinuity:detectOperationalContinuity(answers),
     confidence:{id:confidence,label:confidenceLabel(confidence)},
     contradictions,stageFit,subjectiveMismatch:subjectiveMismatch(need,focus),
     diagnosis:buildDiagnosis({
