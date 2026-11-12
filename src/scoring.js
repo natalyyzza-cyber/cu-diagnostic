@@ -519,7 +519,7 @@ function buildPotential({strengths,growthZones,stage,stageFit,confidence,bottlen
   else if (growthZones.length) parts.push('Сейчас сильнее всего ограничивают следующий шаг: '+growthZones.slice(0,2).map(id=>INDICATORS[id].name.toLowerCase()).join(' и ')+'.');
   if (stageFit?.length) parts.push(stageFit[0]);
   if (confidence==='preliminary') parts.push('Часть выводов пока основана на самооценке, поэтому её стоит уточнить практикой.');
-  parts.push('Диагностика не сравнивает вас с абстрактным «идеальным проектом»: она помогает выбрать наиболее полезный следующий шаг именно для текущей стадии проекта.');
+  parts.push('Диагностика не сравнивает вас с условным идеальным проектом: она помогает выбрать наиболее полезный следующий шаг именно для текущей стадии.');
   return parts.join(' ');
 }
 
