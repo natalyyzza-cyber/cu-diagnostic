@@ -386,7 +386,7 @@ const DIAGNOSIS_TEMPLATES = {
   },
   q9: {
     headline:'Проверить формат проекта в работе с целевой аудиторией',
-    summary:({audience}) => `Сейчас проекту не хватает одного важного факта из практики: как реальные люди реагируют на него${audience ? ` — особенно аудитория «${audience}»` : ''}. Небольшой тест даст больше оснований для следующего решения, чем дальнейшая проработка идеи.`,
+    summary:({audience}) => `Сейчас проекту не хватает одного важного факта из практики: как реальные люди реагируют на него${audience ? ` — особенно аудитория ${audience}` : ''}. Небольшой тест даст больше оснований для следующего решения, чем дальнейшая проработка идеи.`,
     openQuestion:'Что реальные участники сделают после первого контакта с проектом — и какое действие будет для вас значимым сигналом?',
     whyNow:'Пока выводы строятся в основном на предположениях. Практическое действие превращает их в наблюдаемый опыт и позволяет понять, что менять дальше.',
     nextTest:() => 'Проведите небольшой тест с реальными участниками и заранее выберите 1–2 наблюдаемых признака: участие, завершение действия, возвращение, рекомендация или другой подходящий для проекта сигнал. Зафиксируйте результат.',
@@ -525,7 +525,7 @@ function buildPotential({strengths,growthZones,stage,stageFit,confidence,bottlen
 
 function buildNextStep({focus,needMatched,need,stage}) {
   let text=NEXT_STEPS[focus??'none'][stageGroup(stage)];
-  if (focus&&!needMatched&&need&&need!=='unknown'&&stage!=='idea') text += ' Ваш запрос «' + optionLabel('q15', need).toLowerCase() + '» тоже важен, но сначала полезно закрыть это более базовое ограничение.';
+  if (focus&&!needMatched&&need&&need!=='unknown'&&stage!=='idea') text += ' Ваш запрос о ' + optionLabel('q15', need).toLowerCase() + ' тоже важен, но сначала полезно закрыть это более базовое ограничение.';
   return text;
 }
 
@@ -555,7 +555,7 @@ function detectContradictions(a) {
   const q8 = Object.values(a.q8 ?? {});
   const detailedModelClaims = q8.filter(v => ['defined','tested'].includes(v)).length;
   if(a.q3?.includes('unknown') && detailedModelClaims>=6) out.push('Аудитория отмечена как неопределённая, но в большинстве пунктов модели выбраны конкретные решения или практические подтверждения.');
-  if(q8.includes('tested') && !hasPracticalSignals(a)) out.push('В модели отмечены пункты «проверено на практике», но нет второго независимого сигнала — анализа опыта или данных о реакции аудитории. Поэтому практическая проверка пока не подтверждена другими ответами.');
+  if(q8.includes('tested') && !hasPracticalSignals(a)) out.push('В модели отмечены пункты проверенными на практике, но нет второго независимого сигнала — анализа опыта или данных о реакции аудитории. Поэтому практическая проверка пока не подтверждена другими ответами.');
   if(a.q12==='demand' && a.q9==='thinking') out.push('Есть заявленный повторный спрос, но по вопросу о действиях проект ещё не запускался.');
   if(a.q12==='demand' && ['none','no_analysis'].includes(a.q10)) out.push('Заявленный спрос есть, но опыт проекта пока не анализировался.');
   return out;
@@ -593,7 +593,7 @@ function subjectiveMismatch(need,focus) {
   return {
     need:optionLabel('q15',need),
     focus:INDICATORS[focus].growthTitle,
-    text:`Ваш запрос — «${optionLabel('q15',need)}». Сейчас приоритетнее решить задачу «${INDICATORS[focus].growthTitle.toLowerCase()}»; после этого к вашему запросу можно будет вернуться с более прочной основой.`,
+    text:`Ваш запрос — ${optionLabel('q15',need).toLowerCase()}. Сейчас приоритетнее решить задачу ${INDICATORS[focus].growthTitle.toLowerCase()}; после этого к вашему запросу можно будет вернуться с более прочной основой.`,
   };
 }
 
