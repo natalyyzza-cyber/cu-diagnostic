@@ -398,7 +398,7 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
     const flags = [];
     if (r.contradictions?.length) flags.push(...r.contradictions.map(x => 'В ответах есть расхождение: ' + x));
     if (r.subjectiveMismatch) {
-      flags.push(`Сейчас важнее сначала решить задачу «${r.subjectiveMismatch.focus.toLowerCase()}». После этого к вопросу «${r.subjectiveMismatch.need}» можно будет вернуться с более прочной основой.`);
+      flags.push(`Сейчас важнее сначала решить задачу ${r.subjectiveMismatch.focus.toLowerCase()}. После этого к вопросу о том, что вам сейчас нужнее всего, можно будет вернуться с более прочной основой.`);
     }
     if (r.confidence?.id !== 'high' && d.confidenceNote) flags.push(d.confidenceNote);
     return flags.length
