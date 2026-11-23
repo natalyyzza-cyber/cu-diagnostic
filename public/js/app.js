@@ -433,13 +433,11 @@ function renderResult({ id, name, result }, { personalize = false } = {}) {
   };
 
   const cta = h('section', { class: 'cta' },
-    h('h2', {}, 'Разберём ваш проект вместе'),
-    h('p', {}, 'Эксперты Городского университета 2.0 помогут превратить результаты диагностики в план действий, а Школа городских продюсеров — пройти путь от идеи до работающего городского продукта.'),
+    h('h2', {}, 'Продолжите развитие проекта в Школе городских продюсеров'),
+    h('p', {}, 'Если вам нужна поддержка в проработке модели проекта, распределении ролей и выборе следующих шагов, Школа городских продюсеров может стать следующим пространством для этой работы.'),
     h('div', { class: 'cta__buttons' },
-      h('a', { class: 'btn btn--primary btn--lg', href: config.consultationUrl, target: '_blank', rel: 'noopener', onclick: track('consultation') },
-        'Записаться на бесплатную консультацию экспертов ГУ 2.0 по вашему проекту — 30 минут'),
-      h('a', { class: 'btn btn--light btn--lg', href: config.schoolUrl, target: '_blank', rel: 'noopener', onclick: track('school') },
-        'Записаться в Школу городских продюсеров')),
+      h('a', { class: 'btn btn--primary btn--lg', href: config.schoolUrl, target: '_blank', rel: 'noopener', onclick: track('school') },
+        'Узнать о Школе городских продюсеров')),
   );
 
   const tools = h('div', { class: 'result-tools' },
